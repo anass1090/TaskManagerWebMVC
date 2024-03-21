@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using Taskmanager.DAL.Connection;
+using TaskManager.DAL.Connection;
 
 
 namespace TaskManager.UnitTests.DAL
@@ -19,7 +19,9 @@ namespace TaskManager.UnitTests.DAL
         [TestMethod]
         public void TestDatabaseConnection()
         {
-            Assert.IsNotNull(dataAccess.OpenConnection());
+            dataAccess.OpenConnection();
+
+            Assert.IsTrue(dataAccess.Connection.State == System.Data.ConnectionState.Open);
         }
     }
 }

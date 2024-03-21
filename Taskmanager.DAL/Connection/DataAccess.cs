@@ -6,19 +6,26 @@ using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
-namespace Taskmanager.DAL.Connection
+namespace TaskManager.DAL.Connection
 {
     public class DataAccess
     {
         private readonly string ConnectionString = "Server=localhost;Port=3306;Database=taskmanager;Uid=root;Pwd=;\r\n";
-        
-        public MySqlConnection OpenConnection()
+        public MySqlConnection Connection { get; private set; }
+
+        public DataAccess()
         {
-            MySqlConnection connection = new MySqlConnection(ConnectionString);
+            Connection = new MySqlConnection(ConnectionString);
+        }
 
-            connection.Open();
+        public void OpenConnection()
+        {
+            Connection.Open();
+        }
 
-            return connection;
+        public void CloseConnection()
+        {
+            Connection.Close();
         }
     }
 }

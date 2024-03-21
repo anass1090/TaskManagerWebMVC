@@ -1,15 +1,14 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskManager.MVC", "TaskManagerWebMVC\TaskManager.MVC.csproj", "{4C57F18E-6A30-4975-85B3-7578695DC923}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Taskmanager.UnitTests", "Taskmanager.UnitTests\Taskmanager.UnitTests.csproj", "{15E7FF88-6F2C-4EBC-896F-20BB342C27EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Taskmanager.UnitTests", "Taskmanager.UnitTests\Taskmanager.UnitTests.csproj", "{15E7FF88-6F2C-4EBC-896F-20BB342C27EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManager.Logic", "Taskmanager.Logic\TaskManager.Logic.csproj", "{BCDED3A7-1008-473D-8C28-DF0ED1AA81D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskManager.Logic", "Taskmanager.Logic\TaskManager.Logic.csproj", "{BCDED3A7-1008-473D-8C28-DF0ED1AA81D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManager.DAL", "Taskmanager.DAL\TaskManager.DAL.csproj", "{1D363302-CDAC-4564-BB20-A03C119BA553}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskManager.DAL", "Taskmanager.DAL\TaskManager.DAL.csproj", "{1D363302-CDAC-4564-BB20-A03C119BA553}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
