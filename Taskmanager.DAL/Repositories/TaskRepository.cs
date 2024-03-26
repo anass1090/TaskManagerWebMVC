@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using Mysqlx;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -20,8 +21,9 @@ namespace TaskManager.DAL.Repositories
             dataAccess = new DataAccess(); 
         }
 
-        public TaskDTO? CreateTask(string title, string description)
+        public TaskDTO? CreateTask(string title, string description, out string errorMessage)
         {
+            errorMessage = null;
             try
             {
                 dataAccess.OpenConnection();
@@ -47,7 +49,7 @@ namespace TaskManager.DAL.Repositories
                 
 
             } catch (Exception ex) {
-                Console.WriteLine("Error creating task: " + ex.Message);
+                errorMessage = "Error creating task: " + ex.Message;
                 return null;
             }
             finally {
@@ -55,9 +57,38 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public void GetTaskById(int id)
+        public TaskDTO? GetTaskById(int id, out string errorMessage)
         {
+            errorMessage = null;
 
+            try {
+                dataAccess.OpenConnection();
+
+                string query = "SELECT Id, Title, Description FROM Tasks WHERE Id = @Id";
+
+                MySqlCommand command = new(query, dataAccess.Connection);
+                command.Parameters.AddWithValue("@Id", id);
+
+                MySqlDataReader reader = command.ExecuteReader();
+
+                TaskDTO task = new();
+                if (reader.Read())
+                {
+                    task.Id = reader.GetInt32("Id");
+                    task.Title = reader.GetString("Title");
+                    task.Description = reader.GetString("Description");
+                }
+
+                return task;
+            }
+            catch (Exception ex) {
+                errorMessage = "Error fetching task: " + ex.Message;
+                return null;
+
+            }
+            finally { 
+                dataAccess.CloseConnection(); 
+            }
         }
 
         public void UpdateTask()
@@ -70,9 +101,12 @@ namespace TaskManager.DAL.Repositories
 
         }
 
-        public List<TaskDTO> GetAllTasks()
+        public List<TaskDTO> GetAllTasks(out string errorMessage)
         {
             List<TaskDTO> tasks = [];
+
+            errorMessage = null;
+
             try
             {
                 dataAccess.OpenConnection();
@@ -96,7 +130,7 @@ namespace TaskManager.DAL.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error fetching tasks: " + ex.Message);
+                errorMessage = "Error fetching tasks: " + ex.Message;
             }
             finally
             {

@@ -19,10 +19,10 @@ namespace TaskManager.Logic.Managers
         }
 
         #nullable enable
-        public Task? CreateTask(string title, string description)
+        public (Task?, string) CreateTask(string title, string description)
         {
-            TaskDTO? taskDTO = repository.CreateTask(title, description);
-            Task? task = new Task();
+            TaskDTO? taskDTO = repository.CreateTask(title, description, out string errorMessage);
+            Task? task = new();
             if (taskDTO != null)
             {
                 task = new()
@@ -32,14 +32,27 @@ namespace TaskManager.Logic.Managers
                 };
             }
 
-            return task;
+            return (task, errorMessage);
+        }
+
+        public (Task, string) GetTaskById(int id)
+        {
+            TaskDTO? taskDTO = repository.GetTaskById(id, out string errorMessage);
+            Task? task = new();
+
+            if (taskDTO != null)
+            {
+                task = new()
+                {
+                    Id = taskDTO.Id,
+                    Title = taskDTO.Title,
+                    Description = taskDTO.Description
+                };
+            }
+
+            return (task, errorMessage);
         }
         #nullable disable
-
-        public void GetTaskById(int id)
-        {
-            repository.GetTaskById(id);
-        }
 
         public void UpdateTask(int id)
         {
@@ -51,10 +64,10 @@ namespace TaskManager.Logic.Managers
             repository.DeleteTask();
         }
 
-        public List<Task> GetAllTasks()
+        public (List<Task>, string) GetAllTasks()
         {
-            List<TaskDTO> taskDTOs = repository.GetAllTasks();
-            List<Task> tasks = new List<Task>();
+            List<TaskDTO> taskDTOs = repository.GetAllTasks(out string errorMessage);
+            List<Task> tasks = [];
 
             foreach (TaskDTO taskDTO in taskDTOs)
             {
@@ -68,7 +81,7 @@ namespace TaskManager.Logic.Managers
                 tasks.Add(task);
             }
              
-            return tasks;
+            return (tasks, errorMessage);
         }
     }
 }

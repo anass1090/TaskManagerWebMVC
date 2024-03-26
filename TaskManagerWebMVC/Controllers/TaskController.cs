@@ -19,13 +19,17 @@ namespace TaskManager.MVC.Controllers
 
         public IActionResult Index()
         {
-            List<Task> tasks = TaskService.GetAllTasks();
+            var (tasks, errorMessage) = TaskService.GetAllTasks();
+
+            ViewBag.ErrorMessage = errorMessage;
+
             List<TaskViewModel> taskViewModels = [];
 
             foreach (Task task in tasks)
             {
                 TaskViewModel taskView = new()
                 {
+                    Id = task.Id,
                     Title = task.Title,
                     Description = task.Description
                 };
@@ -35,15 +39,39 @@ namespace TaskManager.MVC.Controllers
             return View(taskViewModels);
         }
 
-        public IActionResult View(int id)
+        public IActionResult Details(int id)
         {
-            return View();
+            var (task, errorMessage) = TaskService.GetTaskById(id);
+            ViewBag.ErrorMessage = errorMessage;
+
+            TaskViewModel taskView = new();
+            
+            if (task != null)
+            {
+                taskView = new()
+                {
+                    Id = task.Id,
+                    Title = task.Title,
+                    Description = task.Description
+                };
+
+            }
+
+            return View(taskView);
         }
 
         [HttpPost]
         public IActionResult Create(string title, string description)
         {
-            TaskService.CreateTask(title, description);
+            string errorMessage = TaskService.CreateTask(title, description).Item2;
+            ViewBag.ErrorMessage = errorMessage;
+
+            if (errorMessage != null)
+            {
+                ViewData["ErrorMessage"] = errorMessage;
+                return View("Create");
+            }
+
             return RedirectToAction("Index");
         }
 
@@ -53,8 +81,9 @@ namespace TaskManager.MVC.Controllers
             return View();
         }
 
-        public IActionResult Update()
+        public IActionResult Update(int id, string title, string description)
         {
+
             return View();
         }
 
