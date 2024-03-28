@@ -1,20 +1,23 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TaskManager.Logic.Models;
-using TaskManager.DAL.Repositories;
 using Task = TaskManager.Logic.Models.Task;
 using TaskManager.Logic.Managers;
 using TaskManagerWebMVC.Models;
+using TaskManager.Logic.Interfaces;
+using TaskManager.DAL.Repositories;
 
 namespace TaskManager.MVC.Controllers
 {
     public class TaskController : Controller
     {
         private readonly TaskService TaskService;
+        private readonly TaskRepository TaskRepository;
 
-        public TaskController() 
+        public TaskController()
         {
-            TaskService = new TaskService();
+            TaskRepository = new TaskRepository();
+            this.TaskService = new TaskService(TaskRepository);
         }
 
         public IActionResult Index()
@@ -27,13 +30,7 @@ namespace TaskManager.MVC.Controllers
 
             foreach (Task task in tasks)
             {
-                TaskViewModel taskView = new()
-                {
-                    Id = task.Id,
-                    Title = task.Title,
-                    Description = task.Description
-                };
-
+                TaskViewModel taskView = ConvertTaskToTaskView(task);
                 taskViewModels.Add(taskView);
             }
             return View(taskViewModels);
@@ -48,13 +45,7 @@ namespace TaskManager.MVC.Controllers
             
             if (task != null)
             {
-                taskView = new()
-                {
-                    Id = task.Id,
-                    Title = task.Title,
-                    Description = task.Description
-                };
-
+                taskView = ConvertTaskToTaskView(task);
             }
 
             return View(taskView);
@@ -90,6 +81,18 @@ namespace TaskManager.MVC.Controllers
         public IActionResult Delete()
         {
             return View();
+        }
+
+        private static TaskViewModel ConvertTaskToTaskView(Task task)
+        {
+            TaskViewModel taskView = new()
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description
+            };
+
+            return taskView;
         }
     }
 }

@@ -5,14 +5,15 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using TaskManager.DAL.Connection;
 using TaskManager.DAL.DTO_s;
+using TaskManager.Logic.Interfaces;
+using TaskManager.Logic.Models;
 
 
 namespace TaskManager.DAL.Repositories
 {
-    public class TaskRepository
+    public class TaskRepository : ITaskRepository
     {
         private readonly DataAccess dataAccess;
 
@@ -21,7 +22,7 @@ namespace TaskManager.DAL.Repositories
             dataAccess = new DataAccess(); 
         }
 
-        public TaskDTO? CreateTask(string title, string description, out string errorMessage)
+        public Task CreateTask(string title, string description, out string errorMessage)
         {
             errorMessage = null;
             try
@@ -38,7 +39,7 @@ namespace TaskManager.DAL.Repositories
 
                 int Id = (int)command.LastInsertedId;
 
-                TaskDTO task = new()
+                Task task = new()
                 {
                     Id = Id,
                     Title = title,
@@ -57,7 +58,7 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public TaskDTO? GetTaskById(int id, out string errorMessage)
+        public Task GetTaskById(int id, out string errorMessage)
         {
             errorMessage = null;
 
@@ -71,7 +72,7 @@ namespace TaskManager.DAL.Repositories
 
                 MySqlDataReader reader = command.ExecuteReader();
 
-                TaskDTO task = new();
+                Task task = new();
                 if (reader.Read())
                 {
                     task.Id = reader.GetInt32("Id");
@@ -91,19 +92,21 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public void UpdateTask()
+        public Task UpdateTask(int id)
         {
-
+            Task task = new();
+            return task;
         }
 
-        public void DeleteTask()
+        public Task DeleteTask(int id)
         {
-
+            Task task = new();
+            return task;
         }
 
-        public List<TaskDTO> GetAllTasks(out string errorMessage)
+        public List<Task> GetAllTasks(out string errorMessage)
         {
-            List<TaskDTO> tasks = [];
+            List<Task> tasks = [];
 
             errorMessage = null;
 
@@ -118,7 +121,7 @@ namespace TaskManager.DAL.Repositories
                 
                 while (reader.Read())
                 {
-                    TaskDTO task = new()
+                    Task task = new()
                     {
                         Id = reader.GetInt32("id"),
                         Title = reader["Title"].ToString(),

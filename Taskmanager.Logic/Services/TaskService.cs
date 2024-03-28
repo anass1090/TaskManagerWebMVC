@@ -2,53 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using TaskManager.DAL.DTO_s;
-using TaskManager.DAL.Repositories;
+using TaskManager.Logic.Interfaces;
 using Task = TaskManager.Logic.Models.Task;
 
 namespace TaskManager.Logic.Managers
 {
     public class TaskService
     {
-        private readonly TaskRepository repository;
+        private readonly ITaskRepository TaskRepository;
 
-        public TaskService()
+        public TaskService(ITaskRepository taskRepository)
         {
-            repository = new TaskRepository();
+            this.TaskRepository = taskRepository;
         }
 
         #nullable enable
         public (Task?, string) CreateTask(string title, string description)
         {
-            TaskDTO? taskDTO = repository.CreateTask(title, description, out string errorMessage);
-            Task? task = new();
-            if (taskDTO != null)
-            {
-                task = new()
-                {
-                    Title = taskDTO.Title,
-                    Description = taskDTO.Description
-                };
-            }
+            Task? task = TaskRepository.CreateTask(title, description, out string errorMessage);
 
             return (task, errorMessage);
         }
 
-        public (Task, string) GetTaskById(int id)
+        public (Task?, string) GetTaskById(int id)
         {
-            TaskDTO? taskDTO = repository.GetTaskById(id, out string errorMessage);
-            Task? task = new();
-
-            if (taskDTO != null)
-            {
-                task = new()
-                {
-                    Id = taskDTO.Id,
-                    Title = taskDTO.Title,
-                    Description = taskDTO.Description
-                };
-            }
+            Task? task = TaskRepository.GetTaskById(id, out string errorMessage);
 
             return (task, errorMessage);
         }
@@ -56,31 +34,18 @@ namespace TaskManager.Logic.Managers
 
         public void UpdateTask(int id)
         {
-            repository.UpdateTask();
+            TaskRepository.UpdateTask(id);
         }
 
         public void DeleteTask(int id)
         {
-            repository.DeleteTask();
+            TaskRepository.DeleteTask(id);
         }
 
         public (List<Task>, string) GetAllTasks()
         {
-            List<TaskDTO> taskDTOs = repository.GetAllTasks(out string errorMessage);
-            List<Task> tasks = [];
+            List<Task> tasks = TaskRepository.GetAllTasks(out string errorMessage);
 
-            foreach (TaskDTO taskDTO in taskDTOs)
-            {
-                Task task = new()
-                {
-                    Id = taskDTO.Id,
-                    Title = taskDTO.Title,
-                    Description = taskDTO.Description,
-                }; 
-                
-                tasks.Add(task);
-            }
-             
             return (tasks, errorMessage);
         }
     }
