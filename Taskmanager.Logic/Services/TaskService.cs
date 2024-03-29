@@ -7,14 +7,9 @@ using Task = TaskManager.Logic.Models.Task;
 
 namespace TaskManager.Logic.Managers
 {
-    public class TaskService
+    public class TaskService(ITaskRepository taskRepository)
     {
-        private readonly ITaskRepository TaskRepository;
-
-        public TaskService(ITaskRepository taskRepository)
-        {
-            this.TaskRepository = taskRepository;
-        }
+        private readonly ITaskRepository TaskRepository = taskRepository;
 
         #nullable enable
         public (Task?, string) CreateTask(string title, string description)
@@ -30,12 +25,14 @@ namespace TaskManager.Logic.Managers
 
             return (task, errorMessage);
         }
-        #nullable disable
 
-        public void UpdateTask(int id)
+        public (Task?, string) UpdateTask(int id, string title, string description)
         {
-            TaskRepository.UpdateTask(id);
+            Task? task = TaskRepository.UpdateTask(id, title, description, out string errorMessage);
+
+            return (task, errorMessage);
         }
+        #nullable disable
 
         public void DeleteTask(int id)
         {

@@ -1,23 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using TaskManager.Logic.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using Task = TaskManager.Logic.Models.Task;
 using TaskManager.Logic.Managers;
-using TaskManagerWebMVC.Models;
-using TaskManager.Logic.Interfaces;
 using TaskManager.DAL.Repositories;
+using TaskManagerWebMVC.Models;
 
 namespace TaskManager.MVC.Controllers
 {
     public class TaskController : Controller
     {
         private readonly TaskService TaskService;
-        private readonly TaskRepository TaskRepository;
 
         public TaskController()
         {
-            TaskRepository = new TaskRepository();
-            this.TaskService = new TaskService(TaskRepository);
+            TaskRepository taskRepository = new();
+            TaskService = new TaskService(taskRepository);
         }
 
         public IActionResult Index()
@@ -57,13 +53,17 @@ namespace TaskManager.MVC.Controllers
             string errorMessage = TaskService.CreateTask(title, description).Item2;
             ViewBag.ErrorMessage = errorMessage;
 
-            if (errorMessage != null)
+            if (errorMessage == null)
+            {
+                TempData["SuccessMessage"] = "Task created successfully";
+                return RedirectToAction("Index");
+            }
+            else
             {
                 ViewData["ErrorMessage"] = errorMessage;
                 return View("Create");
             }
 
-            return RedirectToAction("Index");
         }
 
         [HttpGet]
@@ -72,10 +72,36 @@ namespace TaskManager.MVC.Controllers
             return View();
         }
 
-        public IActionResult Update(int id, string title, string description)
+        [HttpPost]
+        public IActionResult Edit(TaskViewModel viewModel)
         {
+            string errorMessage = TaskService.UpdateTask(viewModel.Id, viewModel.Title, viewModel.Description).Item2;
 
-            return View();
+            if(errorMessage == null)
+            {
+                TempData["SuccessMessage"] = "Task updated successfully";
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                ViewBag.ErrorMessage = errorMessage;
+                return View("Edit");
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            Task? task = TaskService.GetTaskById(id).Item1;
+
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            TaskViewModel viewModel = ConvertTaskToTaskView(task);
+
+            return View(viewModel);
         }
 
         public IActionResult Delete()
