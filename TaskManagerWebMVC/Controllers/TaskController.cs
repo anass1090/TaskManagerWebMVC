@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Task = TaskManager.Logic.Models.Task;
 using TaskManager.Logic.Managers;
 using TaskManager.DAL.Repositories;
 using TaskManagerWebMVC.Models;
+using Task = TaskManager.Logic.Models.Task;
+using TaskManager.Logic.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace TaskManager.MVC.Controllers
 {
@@ -13,12 +15,16 @@ namespace TaskManager.MVC.Controllers
         public TaskController()
         {
             TaskRepository taskRepository = new();
-            TaskService = new TaskService(taskRepository);
+            ProjectRepository projectRepository = new();
+
+            TaskService = new (taskRepository, projectRepository);
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
-            var (tasks, errorMessage) = TaskService.GetAllTasks();
+            List<Task> tasks = TaskService.GetAllTasks().Item1;
+            string errorMessage = TaskService.GetAllTasks().Item2;
 
             ViewBag.ErrorMessage = errorMessage;
 
@@ -32,25 +38,30 @@ namespace TaskManager.MVC.Controllers
             return View(taskViewModels);
         }
 
+        [HttpGet]
         public IActionResult Details(int id)
         {
-            var (task, errorMessage) = TaskService.GetTaskById(id);
+            Task? task = TaskService.GetTaskById(id).Item1;
+            string errorMessage = TaskService.GetTaskById(id).Item2;
+
             ViewBag.ErrorMessage = errorMessage;
 
-            TaskViewModel taskView = new();
-            
             if (task != null)
             {
-                taskView = ConvertTaskToTaskView(task);
+                TaskViewModel taskView = ConvertTaskToTaskView(task);
+                return View(taskView);
+            } else
+            {
+                return NotFound();
             }
 
-            return View(taskView);
         }
 
         [HttpPost]
-        public IActionResult Create(string title, string description)
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(string title, string description, int? projectId)
         {
-            string errorMessage = TaskService.CreateTask(title, description).Item2;
+            string errorMessage = TaskService.CreateTask(title, description, projectId).Item2;
             ViewBag.ErrorMessage = errorMessage;
 
             if (errorMessage == null)
@@ -73,11 +84,12 @@ namespace TaskManager.MVC.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Edit(TaskViewModel viewModel)
         {
-            string errorMessage = TaskService.UpdateTask(viewModel.Id, viewModel.Title, viewModel.Description).Item2;
+            string errorMessage = TaskService.UpdateTask(viewModel.Id, viewModel.Title, viewModel.Project_Id, viewModel.Description).Item2;
 
-            if(errorMessage == null)
+            if (errorMessage == null)
             {
                 TempData["SuccessMessage"] = "Task updated successfully";
                 return RedirectToAction("Index");
@@ -93,6 +105,24 @@ namespace TaskManager.MVC.Controllers
         public IActionResult Edit(int id)
         {
             Task? task = TaskService.GetTaskById(id).Item1;
+            List<Project>? projects = TaskService.GetAllProjects().Item1;
+
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            TaskViewModel viewModel = ConvertTaskToTaskView(task);
+
+            ViewBag.Projects = projects;
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            Task? task = TaskService.GetTaskById(id).Item1;
 
             if (task == null)
             {
@@ -104,9 +134,22 @@ namespace TaskManager.MVC.Controllers
             return View(viewModel);
         }
 
-        public IActionResult Delete()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(TaskViewModel viewModel)
         {
-            return View();
+            string? errorMessage = TaskService.DeleteTask(viewModel.Id);
+
+            if (errorMessage == null)
+            {
+                TempData["SuccessMessage"] = "Task deleted successfully";
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Something went wrong deleting the task: " + errorMessage;
+                return RedirectToAction("Index");
+            }
         }
 
         private static TaskViewModel ConvertTaskToTaskView(Task task)
@@ -115,7 +158,8 @@ namespace TaskManager.MVC.Controllers
             {
                 Id = task.Id,
                 Title = task.Title,
-                Description = task.Description
+                Description = task.Description,
+                Project_Id = task.Project_Id,
             };
 
             return taskView;

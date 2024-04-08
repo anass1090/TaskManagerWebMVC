@@ -1,13 +1,38 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using TaskManager.DAL.Repositories;
+using TaskManager.Logic.Services;
+using TaskManager.Logic.Models;
+using TaskManager.MVC.Models;
 
 namespace TaskManager.MVC.Controllers
 {
     public class ProjectController : Controller
     {
+        private readonly ProjectService projectService;
+
+        public ProjectController()
+        {
+            ProjectRepository projectRepository = new();
+            projectService = new (projectRepository);
+        }
+
+        [HttpGet]
         public ActionResult Index()
         {
-            return View();
+            List<Project> projects = projectService.GetAllProjects().Item1;
+            string errorMessage = projectService.GetAllProjects().Item2;
+
+            ViewBag.ErrorMessage = errorMessage;
+
+            List<ProjectViewModel> projectViewModels = [];
+
+            foreach(Project project in projects)
+            {
+                ProjectViewModel projectView = ConvertProjectToProjectView(project);
+                projectViewModels.Add(projectView);
+            }
+
+            return View(projectViewModels);
         }
 
         public ActionResult Details(int id)
@@ -70,6 +95,18 @@ namespace TaskManager.MVC.Controllers
             {
                 return View();
             }
+        }
+
+        private ProjectViewModel ConvertProjectToProjectView(Project project)
+        {
+            ProjectViewModel projectView = new()
+            {
+                Id = project.Id,
+                Title = project.Title,
+                Description = project.Description,
+            };
+
+            return projectView;
         }
     }
 }

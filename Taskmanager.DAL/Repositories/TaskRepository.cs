@@ -14,21 +14,22 @@ namespace TaskManager.DAL.Repositories
 
         public TaskRepository()
         {
-            dataAccess = new(); 
+            dataAccess = new();
         }
 
-        public Task CreateTask(string title, string description, out string errorMessage)
+        public Task CreateTask(string title, string description, int? projectId, out string errorMessage)
         {
             errorMessage = null;
             try
             {
                 dataAccess.OpenConnection();
-                string query = "INSERT INTO Tasks (Title, Description) VALUES (@Title, @Description)";
+                string query = "INSERT INTO Tasks (Title, Description, Project_Id) VALUES (@Title, @Description, @Project_Id)";
 
-                MySqlCommand command = new MySqlCommand(query, dataAccess.Connection);
+                MySqlCommand command = new (query, dataAccess.Connection);
 
                 command.Parameters.AddWithValue("@Title", title);
                 command.Parameters.AddWithValue("@Description", description);
+                command.Parameters.AddWithValue("@Project_Id", projectId);
 
                 command.ExecuteNonQuery();
 
@@ -60,7 +61,7 @@ namespace TaskManager.DAL.Repositories
             try {
                 dataAccess.OpenConnection();
 
-                string query = "SELECT Id, Title, Description FROM Tasks WHERE Id = @Id";
+                string query = "SELECT Id, Title, Description, Project_Id FROM Tasks WHERE Id = @Id";
 
                 MySqlCommand command = new(query, dataAccess.Connection);
                 command.Parameters.AddWithValue("@Id", id);
@@ -73,6 +74,7 @@ namespace TaskManager.DAL.Repositories
                     task.Id = reader.GetInt32("Id");
                     task.Title = reader.GetString("Title");
                     task.Description = reader.GetString("Description");
+                    task.Project_Id = reader.GetInt32("Project_Id");
                 }
 
                 return task;
@@ -87,26 +89,28 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public Task? UpdateTask(int id, string title, string description, out string errorMessage)
+        public Task UpdateTask(int id, string title, string description, int? projectId, out string errorMessage)
         {
             errorMessage = null;
             try
             {
                 dataAccess.OpenConnection();
 
-                string query = "UPDATE Tasks SET Title = @Title, Description = @Description WHERE Id = @Id";
+                string query = "UPDATE Tasks SET Title = @Title, Description = @Description, Project_Id = @Project_Id WHERE Id = @Id";
                 MySqlCommand command = new(query, dataAccess.Connection);
 
                 command.Parameters.AddWithValue("@Id", id);
                 command.Parameters.AddWithValue("@Title", title);
                 command.Parameters.AddWithValue("@Description", description);
+                command.Parameters.AddWithValue("@Project_Id", projectId);
 
                 command.ExecuteNonQuery();
 
                 Task updatedTask = new() { 
                     Id = id, 
                     Title = title, 
-                    Description = description 
+                    Description = description,
+                    Project_Id = projectId,
                 };
 
                 return updatedTask;
@@ -122,10 +126,27 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public Task DeleteTask(int id)
+        public void DeleteTask(int id, out string errorMessage)
         {
-            Task task = new();
-            return task;
+            errorMessage = null;
+
+            try
+            {
+                dataAccess.OpenConnection();
+                
+                string query = "DELETE FROM Tasks WHERE Id = @Id";
+
+                MySqlCommand command = new(query, dataAccess.Connection);
+
+                command.Parameters.AddWithValue("@Id", id);
+
+                command.ExecuteNonQuery();
+            } catch(Exception ex)
+            {
+                errorMessage = "Error deleting task: " + ex.Message;
+            } finally { 
+                dataAccess.CloseConnection(); 
+            }
         }
 
         public List<Task> GetAllTasks(out string errorMessage)

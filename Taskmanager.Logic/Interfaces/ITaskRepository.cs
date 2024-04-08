@@ -7,8 +7,8 @@ namespace TaskManager.Logic.Interfaces
     {
         List<Task> GetAllTasks(out string errorMessage);
         Task? GetTaskById(int id, out string errorMessage);
-        Task? CreateTask(string title, string description, out string errorMessage);
-        Task? UpdateTask(int id, string title, string description, out string errorMessage);
-        Task DeleteTask(int id);
+        Task? CreateTask(string title, string description, int? projectId, out string errorMessage);
+        Task? UpdateTask(int id, string title, string description, int? projectId, out string errorMessage);
+        void DeleteTask(int id, out string errorMessage);
     }
 }
