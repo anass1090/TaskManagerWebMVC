@@ -74,7 +74,7 @@ namespace TaskManager.DAL.Repositories
                     task.Id = reader.GetInt32("Id");
                     task.Title = reader.GetString("Title");
                     task.Description = reader.GetString("Description");
-                    task.Project_Id = reader.GetInt32("Project_Id");
+                    task.Project_Id = reader["Project_Id"] as Int32?;
                 }
 
                 return task;

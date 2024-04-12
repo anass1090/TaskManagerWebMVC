@@ -1,7 +1,18 @@
+using TaskManager.DAL.Repositories;
+using TaskManager.Logic.Managers;
+using TaskManager.Logic.Services;
+using TaskManager.Logic.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Register repositories and services
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<TaskService>();
+builder.Services.AddScoped<ProjectService>();
 
 var app = builder.Build();
 

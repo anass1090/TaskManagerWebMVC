@@ -4,20 +4,19 @@ using TaskManager.DAL.Repositories;
 using TaskManagerWebMVC.Models;
 using Task = TaskManager.Logic.Models.Task;
 using TaskManager.Logic.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using TaskManager.Logic.Services;
 
 namespace TaskManager.MVC.Controllers
 {
     public class TaskController : Controller
     {
         private readonly TaskService TaskService;
+        private readonly ProjectService ProjectService;
 
-        public TaskController()
+        public TaskController(TaskService taskService, ProjectService projectService)
         {
-            TaskRepository taskRepository = new();
-            ProjectRepository projectRepository = new();
-
-            TaskService = new (taskRepository, projectRepository);
+            TaskService = taskService;
+            ProjectService = projectService;
         }
 
         [HttpGet]
@@ -105,11 +104,37 @@ namespace TaskManager.MVC.Controllers
         public IActionResult Edit(int id)
         {
             Task? task = TaskService.GetTaskById(id).Item1;
-            List<Project>? projects = TaskService.GetAllProjects().Item1;
 
-            if (task == null)
+            string errorMessage1 = TaskService.GetTaskById(id).Item2;
+            string errorMessage2 = ProjectService.GetAllProjects().Item2;
+            string? errorMessage;
+            if(errorMessage1 != null || errorMessage2 != null)
+            {
+                errorMessage = errorMessage1 + errorMessage2;
+            } else if (errorMessage1 != null)
+            {
+                errorMessage = errorMessage1;
+            } else if (errorMessage2 != null)
+            {
+                errorMessage = errorMessage2;
+            } else
+            {
+                errorMessage = null;
+            }
+
+            List<Project>? projects = ProjectService.GetAllProjects().Item1;
+
+            if (task == null)   
             {
                 return NotFound();
+            } 
+
+            if (errorMessage == null)
+            {
+            }
+            else
+            {
+                ViewBag.ErrorMessage = errorMessage;
             }
 
             TaskViewModel viewModel = ConvertTaskToTaskView(task);
