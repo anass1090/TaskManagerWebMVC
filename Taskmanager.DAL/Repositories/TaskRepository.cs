@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TaskManager.DAL.Connection;
 using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
+using MySqlX.XDevAPI;
 
 
 namespace TaskManager.DAL.Repositories
@@ -107,8 +108,8 @@ namespace TaskManager.DAL.Repositories
                 command.ExecuteNonQuery();
 
                 Task updatedTask = new() { 
-                    Id = id, 
-                    Title = title, 
+                    Id = id,
+                    Title = title,
                     Description = description,
                     Project_Id = projectId,
                 };
