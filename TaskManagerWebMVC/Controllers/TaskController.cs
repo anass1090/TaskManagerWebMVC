@@ -61,7 +61,6 @@ namespace TaskManager.MVC.Controllers
         public IActionResult Create(string title, string description, int? projectId)
         {
             string errorMessage = TaskService.CreateTask(title, description, projectId).Item2;
-            ViewBag.ErrorMessage = errorMessage;
 
             if (errorMessage == null)
             {
@@ -70,7 +69,7 @@ namespace TaskManager.MVC.Controllers
             }
             else
             {
-                ViewData["ErrorMessage"] = errorMessage;
+                ViewBag.ErrorMessage = errorMessage;
                 return View("Create");
             }
 
@@ -79,6 +78,10 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Create()
         {
+            List<Project> projects = ProjectService.GetAllProjects().Item1;
+
+            ViewBag.Projects = projects;
+
             return View();
         }
 
@@ -103,43 +106,23 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
+            string errorMessage = TaskService.GetTaskById(id).Item2;
+
             Task? task = TaskService.GetTaskById(id).Item1;
-
-            string errorMessage1 = TaskService.GetTaskById(id).Item2;
-            string errorMessage2 = ProjectService.GetAllProjects().Item2;
-            string? errorMessage;
-            if(errorMessage1 != null || errorMessage2 != null)
-            {
-                errorMessage = errorMessage1 + errorMessage2;
-            } else if (errorMessage1 != null)
-            {
-                errorMessage = errorMessage1;
-            } else if (errorMessage2 != null)
-            {
-                errorMessage = errorMessage2;
-            } else
-            {
-                errorMessage = null;
-            }
-
             List<Project>? projects = ProjectService.GetAllProjects().Item1;
+            ViewBag.Projects = projects;
 
-            if (task == null)   
+            if (task == null)
             {
                 return NotFound();
-            } 
-
-            if (errorMessage == null)
-            {
-            }
-            else
-            {
-                ViewBag.ErrorMessage = errorMessage;
             }
 
             TaskViewModel viewModel = ConvertTaskToTaskView(task);
 
-            ViewBag.Projects = projects;
+            if (errorMessage != null)
+            { 
+                ViewBag.ErrorMessage = errorMessage;
+            }
 
             return View(viewModel);
         }
