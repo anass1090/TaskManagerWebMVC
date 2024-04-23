@@ -108,6 +108,7 @@ namespace TaskManager.MVC.Controllers
             string errorMessage1 = TaskService.GetTaskById(id).Item2;
             string errorMessage2 = ProjectService.GetAllProjects().Item2;
             string? errorMessage;
+            
             if(errorMessage1 != null || errorMessage2 != null)
             {
                 errorMessage = errorMessage1 + errorMessage2;
