@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TaskManager.Logic.Interfaces;
+﻿using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
 #nullable enable
 namespace TaskManager.Logic.Services
@@ -19,7 +14,6 @@ namespace TaskManager.Logic.Services
 
         public (User?, string?) CreateUser(string firstName, string lastName, string email, string password)
         {
-            
             User? user = UserRepository.CreateUser(firstName, lastName, password, email, out string? errorMessage);           
 
             return (user, errorMessage);

@@ -60,35 +60,14 @@ namespace TaskManager.DAL.Repositories
 
         public User? AuthenticateUser(string email, string password, out string? errorMessage)
         {
-            errorMessage = null;
+            User? user = GetUserByEmail(email, out errorMessage);
 
-            try
+            if (user != null && user.Password == password)
             {
-                User? user = GetUserByEmail(email, out errorMessage);
-
-                if (errorMessage != null)
-                {
-                    return null;
-                }
-
-                if (user != null && user.Password == password)
-                {
-                    return user;
-                }
-                else
-                {
-                    errorMessage = "Invalid email or password.";
-                    return null;
-                }
-            }
-            catch (Exception ex)
+                return user;
+            } else
             {
-                errorMessage = "Error authenticating user: " + ex.Message;
                 return null;
-            }
-            finally
-            {
-                dataAccess.CloseConnection();
             }
         }
 
@@ -107,18 +86,21 @@ namespace TaskManager.DAL.Repositories
 
                 MySqlDataReader reader = command.ExecuteReader();
 
-                User user = new();
-
                 if (reader.Read())
                 {
-                    user.Id = reader.GetInt32("Id");
-                    user.FirstName = reader.GetString("FirstName");
-                    user.LastName = reader.GetString("LastName");
-                    user.Email = reader.GetString("Email");
-                    user.Password = reader.GetString("Password");
+                    User user = new()
+                    {
+                        Id = reader.GetInt32("Id"),
+                        FirstName = reader.GetString("FirstName"),
+                        LastName = reader.GetString("LastName"),
+                        Email = reader.GetString("Email"),
+                        Password = reader.GetString("Password")
+                    };
+
+                    return user;
                 }
 
-                return user;
+                return null;
             }
             catch (Exception ex)
             {
