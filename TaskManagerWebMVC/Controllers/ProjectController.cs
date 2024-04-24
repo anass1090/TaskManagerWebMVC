@@ -19,17 +19,20 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            List<Project> projects = projectService.GetAllProjects().Item1;
+            List<Project>? projects = projectService.GetAllProjects().Item1;
             string errorMessage = projectService.GetAllProjects().Item2;
 
             ViewBag.ErrorMessage = errorMessage;
 
             List<ProjectViewModel> projectViewModels = [];
 
-            foreach(Project project in projects)
+            foreach(Project? project in projects)
             {
-                ProjectViewModel projectView = ConvertProjectToProjectView(project);
-                projectViewModels.Add(projectView);
+                if(project != null)
+                {
+                    ProjectViewModel projectView = ConvertProjectToProjectView(project);
+                    projectViewModels.Add(projectView);
+                }
             }
 
             return View(projectViewModels);
@@ -97,7 +100,7 @@ namespace TaskManager.MVC.Controllers
             }
         }
 
-        private ProjectViewModel ConvertProjectToProjectView(Project project)
+        private static ProjectViewModel ConvertProjectToProjectView(Project project)
         {
             ProjectViewModel projectView = new()
             {

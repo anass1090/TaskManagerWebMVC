@@ -4,7 +4,7 @@ using MySql.Data.MySqlClient;
 using TaskManager.DAL.Connection;
 using TaskManager.Logic.Models;
 using TaskManager.Logic.Interfaces;
-
+#nullable enable
 namespace TaskManager.DAL.Repositories
 {
     public class ProjectRepository : IProjectRepository
@@ -16,7 +16,7 @@ namespace TaskManager.DAL.Repositories
             dataAccess = new();
         }
 
-        public Project CreateProject(string title, string description, out string errorMessage)
+        public Project? CreateProject(string title, string description, out string? errorMessage)
         {
             errorMessage = null;
             try
@@ -41,8 +41,6 @@ namespace TaskManager.DAL.Repositories
                 };
 
                 return project;
-
-
             }
             catch (Exception ex)
             {
@@ -55,7 +53,7 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public Project GetProjectById(int id, out string errorMessage)
+        public Project? GetProjectById(int id, out string? errorMessage)
         {
             errorMessage = null;
 
@@ -70,15 +68,19 @@ namespace TaskManager.DAL.Repositories
 
                 using MySqlDataReader reader = command.ExecuteReader();
 
-                Project project = new();
+                
                 if (reader.Read())
                 {
-                    project.Id = reader.GetInt32("Id");
-                    project.Title = reader.GetString("Title");
-                    project.Description = reader.GetString("Description");
-                }
+                    Project project = new()
+                    {
+                        Id = reader.GetInt32("Id"),
+                        Title = reader.GetString("Title"),
+                        Description = reader.GetString("Description")
+                    };
 
-                return project;
+                    return project;
+                }
+                return null;
             }
             catch (Exception ex)
             {
@@ -92,14 +94,14 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public Project UpdateProject(int id, string title, string description, out string errorMessage)
+        public Project? UpdateProject(int id, string title, string description, out string? errorMessage)
         {
             errorMessage = null;
             try
             {
                 dataAccess.OpenConnection();
 
-                string query = "UPDATE Tasks SET Title = @Title, Description = @Description WHERE Id = @Id";
+                string query = "UPDATE Projects SET Title = @Title, Description = @Description WHERE Id = @Id";
                 MySqlCommand command = new(query, dataAccess.Connection);
 
                 command.Parameters.AddWithValue("@Id", id);
@@ -129,7 +131,7 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public void DeleteProject(int id, out string errorMessage)
+        public void DeleteProject(int id, out string? errorMessage)
         {
             errorMessage = null;
 
@@ -137,7 +139,7 @@ namespace TaskManager.DAL.Repositories
             {
                 dataAccess.OpenConnection();
 
-                string query = "DELETE FROM Tasks WHERE Id = @Id";
+                string query = "DELETE FROM Projects WHERE Id = @Id";
 
                 MySqlCommand command = new(query, dataAccess.Connection);
 
@@ -155,7 +157,7 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public List<Project> GetAllProjects(out string errorMessage)
+        public List<Project>? GetAllProjects(out string? errorMessage)
         {
             List<Project> projects = [];
 
@@ -185,7 +187,7 @@ namespace TaskManager.DAL.Repositories
             }
             catch (Exception ex)
             {
-                errorMessage = "Error fetching tasks: " + ex.Message;
+                errorMessage = "Error fetching projects: " + ex.Message;
             }
             finally
             {
@@ -193,6 +195,65 @@ namespace TaskManager.DAL.Repositories
             }
 
             return projects;
+        }
+
+        public (List<Task>?, Project?) GetTasksByProject(int projectId, out string? errorMessage)
+        {
+            errorMessage = null;
+
+            try
+            {
+                dataAccess.OpenConnection();
+
+                string tasksQuery = "SELECT Id, Title, Description FROM Tasks WHERE Project_Id = @projectId";
+
+                MySqlCommand tasksCommand = new(tasksQuery, dataAccess.Connection);
+                using MySqlDataReader tasksReader = tasksCommand.ExecuteReader();
+
+                List<Task> tasks = [];
+
+                while (tasksReader.Read())
+                {
+                    Task task = new()
+                    {
+                        Id = tasksReader.GetInt32("id"),
+                        Title = tasksReader["Title"].ToString(),
+                        Description = tasksReader["Description"].ToString(),
+                    };
+
+                    tasks.Add(task);
+
+                }
+
+                string projectQuery = "SELECT Id, Title, Description FROM Project WHERE Id = @Id";
+
+                MySqlCommand projectCommand = new(projectQuery, dataAccess.Connection);
+                using MySqlDataReader projectReader = projectCommand.ExecuteReader();
+
+                while (projectReader.Read())
+                {
+                    Project project = new()
+                    {
+                        Id = tasksReader.GetInt32("id"),
+                        Title = tasksReader["Title"].ToString(),
+                        Description = tasksReader["Description"].ToString(),
+                        Tasks = tasks
+                    };
+
+                    return (tasks, project);
+                }
+
+                return (null, null);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "Error fetching tasks for project: " + ex.Message;
+                return (null, null);
+            }
+            finally 
+            { 
+                dataAccess.CloseConnection(); 
+            }
         }
     }
 }

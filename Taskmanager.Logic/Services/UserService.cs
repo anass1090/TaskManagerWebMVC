@@ -1,4 +1,6 @@
-﻿using TaskManager.Logic.Interfaces;
+﻿using System.Web;
+using System.Xml;
+using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
 #nullable enable
 namespace TaskManager.Logic.Services
@@ -21,7 +23,14 @@ namespace TaskManager.Logic.Services
 
         public (User?, string?) AuthenticateUser(string email, string password)
         {
-            User? user = UserRepository.AuthenticateUser(email, password, out string? errorMessage);
+            User? user = UserRepository.AuthenticateUser(email, password);
+            string? errorMessage = null;
+
+            if (user == null)
+            {
+                errorMessage = "Invalid email and or password.";
+                return (null, errorMessage);
+            }
 
             return (user, errorMessage);
         }
