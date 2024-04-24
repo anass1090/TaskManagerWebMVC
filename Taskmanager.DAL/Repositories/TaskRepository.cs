@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using TaskManager.DAL.Connection;
 using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
-using MySqlX.XDevAPI;
 
-
+#nullable enable
 namespace TaskManager.DAL.Repositories
 {
     public class TaskRepository : ITaskRepository
@@ -18,19 +17,20 @@ namespace TaskManager.DAL.Repositories
             dataAccess = new();
         }
 
-        public Task CreateTask(string title, string description, int? projectId, out string errorMessage)
+        public Task? CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
         {
             errorMessage = null;
             try
             {
                 dataAccess.OpenConnection();
-                string query = "INSERT INTO Tasks (Title, Description, Project_Id) VALUES (@Title, @Description, @Project_Id)";
+                string query = "INSERT INTO Tasks (Title, Description, Project_Id, User_Id) VALUES (@Title, @Description, @Project_Id, @User_Id)";
 
                 MySqlCommand command = new (query, dataAccess.Connection);
 
                 command.Parameters.AddWithValue("@Title", title);
                 command.Parameters.AddWithValue("@Description", description);
                 command.Parameters.AddWithValue("@Project_Id", projectId);
+                command.Parameters.AddWithValue("@User_Id", userId);
 
                 command.ExecuteNonQuery();
 
@@ -55,7 +55,7 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public Task GetTaskById(int id, out string errorMessage)
+        public Task? GetTaskById(int id, out string? errorMessage)
         {
             errorMessage = null;
 
@@ -69,16 +69,19 @@ namespace TaskManager.DAL.Repositories
 
                 using MySqlDataReader reader = command.ExecuteReader();
 
-                Task task = new();
                 if (reader.Read())
                 {
-                    task.Id = reader.GetInt32("Id");
-                    task.Title = reader.GetString("Title");
-                    task.Description = reader.GetString("Description");
-                    task.Project_Id = reader["Project_Id"] as Int32?;
-                }
+                    Task task = new()
+                    {
+                        Id = reader.GetInt32("Id"),
+                        Title = reader.GetString("Title"),
+                        Description = reader.GetString("Description"),
+                        Project_Id = reader["Project_Id"] as Int32?
+                    };
 
-                return task;
+                    return task;
+                }
+                return null;
             }
             catch (Exception ex) {
                 errorMessage = "Error fetching task: " + ex.Message;
@@ -90,7 +93,7 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public Task UpdateTask(int id, string title, string description, int? projectId, out string errorMessage)
+        public Task? UpdateTask(int id, string title, string description, int? projectId, out string? errorMessage)
         {
             errorMessage = null;
             try
@@ -127,7 +130,7 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public void DeleteTask(int id, out string errorMessage)
+        public void DeleteTask(int id, out string? errorMessage)
         {
             errorMessage = null;
 
@@ -150,7 +153,7 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public List<Task> GetAllTasks(out string errorMessage)
+        public List<Task>? GetAllTasks(int userId, out string? errorMessage)
         {
             List<Task> tasks = [];
 
@@ -160,9 +163,10 @@ namespace TaskManager.DAL.Repositories
             {
                 dataAccess.OpenConnection();
 
-                string query = "SELECT Id, Title, Description FROM Tasks";
+                string query = "SELECT Id, Title, Description FROM Tasks WHERE User_Id = @userId";
 
                 MySqlCommand command = new(query, dataAccess.Connection);
+                command.Parameters.AddWithValue("@userId", userId);
 
                 using MySqlDataReader reader = command.ExecuteReader();
 
@@ -177,17 +181,18 @@ namespace TaskManager.DAL.Repositories
 
                     tasks.Add(task);
                 }
+
+                return tasks;
             }
             catch (Exception ex)
             {
                 errorMessage = "Error fetching tasks: " + ex.Message;
+                return null;
             }
             finally
             {
                 dataAccess.CloseConnection();
             }
-
-            return tasks;
         }
     }
 }

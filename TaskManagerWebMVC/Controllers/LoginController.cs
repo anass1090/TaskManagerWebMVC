@@ -27,12 +27,14 @@ namespace TaskManager.MVC.Controllers
         {
             (User? user, string? errorMessage) = UserService.AuthenticateUser(email, password);
 
-            if(errorMessage != null)
+            if(user == null)
             {
                 ViewBag.ErrorMessage = errorMessage;
                 return View();
             }
-            
+
+            HttpContext.Session.SetInt32("userId", user.Id);
+
             return RedirectToAction("Index", "Home");
         }
     }

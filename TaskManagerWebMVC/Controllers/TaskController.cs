@@ -22,19 +22,26 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            List<Task> tasks = TaskService.GetAllTasks().Item1;
-            string errorMessage = TaskService.GetAllTasks().Item2;
-
-            ViewBag.ErrorMessage = errorMessage;
-
-            List<TaskViewModel> taskViewModels = [];
-
-            foreach (Task task in tasks)
+            int? userId = HttpContext.Session.GetInt32("userId");
+            if (userId == null)
             {
-                TaskViewModel taskView = ConvertTaskToTaskView(task);
-                taskViewModels.Add(taskView);
+                TempData["errorMessage"] = "something went wrong try logging in again.";
+                return RedirectToAction("Login", "Login");
             }
-            return View(taskViewModels);
+            else
+            {
+                (List<Task> tasks, string? errorMessage) = TaskService.GetAllTasks(userId.Value);
+
+                ViewBag.ErrorMessage = errorMessage;
+                List<TaskViewModel> taskViewModels = [];
+
+                foreach (Task task in tasks)
+                {
+                    TaskViewModel taskView = ConvertTaskToTaskView(task);
+                    taskViewModels.Add(taskView);
+                }
+                return View(taskViewModels);
+            }
         }
 
         [HttpGet]
@@ -60,7 +67,15 @@ namespace TaskManager.MVC.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(string title, string description, int? projectId)
         {
-            string errorMessage = TaskService.CreateTask(title, description, projectId).Item2;
+            int? userId = HttpContext.Session.GetInt32("userId");
+
+            if (userId == null)
+            {
+                TempData["errorMessage"] = "something went wrong try logging in again.";
+                return RedirectToAction("Login", "Login");
+            }
+
+            string errorMessage = TaskService.CreateTask(title, description, projectId, userId.Value).Item2;
 
             if (errorMessage == null)
             {
@@ -108,9 +123,12 @@ namespace TaskManager.MVC.Controllers
         {
             string errorMessage = TaskService.GetTaskById(id).Item2;
 
+            if (errorMessage != null)
+            {
+                ViewBag.ErrorMessage = errorMessage;
+            }
+
             Task? task = TaskService.GetTaskById(id).Item1;
-            List<Project>? projects = ProjectService.GetAllProjects().Item1;
-            ViewBag.Projects = projects;
 
             if (task == null)
             {
@@ -118,11 +136,9 @@ namespace TaskManager.MVC.Controllers
             }
 
             TaskViewModel viewModel = ConvertTaskToTaskView(task);
-
-            if (errorMessage != null)
-            { 
-                ViewBag.ErrorMessage = errorMessage;
-            }
+            
+            List<Project>? projects = ProjectService.GetAllProjects().Item1;
+            ViewBag.Projects = projects;
 
             return View(viewModel);
         }
