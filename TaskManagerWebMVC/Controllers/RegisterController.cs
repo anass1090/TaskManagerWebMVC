@@ -5,16 +5,8 @@ using TaskManager.Logic.Models;
 
 namespace TaskManager.MVC.Controllers
 {
-    public class RegisterController : Controller
+    public class RegisterController(UserService userService) : Controller
     {
-        private readonly UserService UserService;
-
-        public RegisterController()
-        {
-            UserRepository userRepository = new();
-            UserService = new(userRepository);
-        }
-
         [HttpGet]
         public IActionResult Register()
         {
@@ -24,7 +16,7 @@ namespace TaskManager.MVC.Controllers
         [HttpPost]
         public IActionResult Register(string firstName, string lastName, string email, string password)
         {
-            (User? user, string? errorMessage) = UserService.CreateUser(firstName, lastName, email, password);
+            (User? user, string? errorMessage) = userService.CreateUser(firstName, lastName, email, password);
             
             if(errorMessage != null)
             {

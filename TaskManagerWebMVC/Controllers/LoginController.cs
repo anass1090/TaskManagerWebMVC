@@ -1,21 +1,11 @@
 ﻿using TaskManager.Logic.Models;
 using Microsoft.AspNetCore.Mvc;
-using TaskManager.DAL.Repositories;
 using TaskManager.Logic.Services;
-using System.Web;
 
 namespace TaskManager.MVC.Controllers
 {
-    public class LoginController : Controller
+    public class LoginController(UserService userService) : Controller
     {
-        private readonly UserService UserService;
-
-        public LoginController()
-        {
-            UserRepository userRepository = new();
-            UserService = new(userRepository);
-        }
-
         [HttpGet]
         public IActionResult Login()
         {
@@ -25,7 +15,7 @@ namespace TaskManager.MVC.Controllers
         [HttpPost]
         public IActionResult Login(string email, string password)
         {
-            (User? user, string? errorMessage) = UserService.AuthenticateUser(email, password);
+            (User? user, string? errorMessage) = userService.AuthenticateUser(email, password);
 
             if(user == null)
             {

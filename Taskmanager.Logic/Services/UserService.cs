@@ -1,29 +1,20 @@
-﻿using System.Web;
-using System.Xml;
-using TaskManager.Logic.Interfaces;
+﻿using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
 #nullable enable
 namespace TaskManager.Logic.Services
 {
-    public class UserService
+    public class UserService(IUserRepository userRepository)
     {
-        private readonly IUserRepository UserRepository;
-
-        public UserService(IUserRepository userRepository)
-        {
-            UserRepository = userRepository;
-        }
-
         public (User?, string?) CreateUser(string firstName, string lastName, string email, string password)
         {
-            User? user = UserRepository.CreateUser(firstName, lastName, password, email, out string? errorMessage);           
+            User? user = userRepository.CreateUser(firstName, lastName, password, email, out string? errorMessage);           
 
             return (user, errorMessage);
         }
 
         public (User?, string?) AuthenticateUser(string email, string password)
         {
-            User? user = UserRepository.AuthenticateUser(email, password);
+            User? user = userRepository.AuthenticateUser(email, password);
             string? errorMessage = null;
 
             if (user == null)
@@ -37,14 +28,14 @@ namespace TaskManager.Logic.Services
 
         public (User?, string?) GetUserByEmail(string email)
         {
-            User? user = UserRepository.GetUserByEmail(email, out string? errorMessage);
+            User? user = userRepository.GetUserByEmail(email, out string? errorMessage);
 
             return (user, errorMessage);
         }
 
         public (User?, string?) GetUserById(int id)
         {
-            User? user = UserRepository.GetUserById(id, out string? errorMessage);
+            User? user = userRepository.GetUserById(id, out string? errorMessage);
 
             return (user, errorMessage);
         }

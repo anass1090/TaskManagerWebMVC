@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManager.Logic.Managers;
-using TaskManager.DAL.Repositories;
 using TaskManagerWebMVC.Models;
 using Task = TaskManager.Logic.Models.Task;
 using TaskManager.Logic.Models;
@@ -8,21 +7,13 @@ using TaskManager.Logic.Services;
 
 namespace TaskManager.MVC.Controllers
 {
-    public class TaskController : Controller
+    public class TaskController(TaskService taskService, ProjectService projectService) : Controller
     {
-        private readonly TaskService TaskService;
-        private readonly ProjectService ProjectService;
-
-        public TaskController(TaskService taskService, ProjectService projectService)
-        {
-            TaskService = taskService;
-            ProjectService = projectService;
-        }
-
         [HttpGet]
         public IActionResult Index()
         {
             int? userId = HttpContext.Session.GetInt32("userId");
+
             if (userId == null)
             {
                 TempData["errorMessage"] = "something went wrong try logging in again.";
@@ -30,15 +21,18 @@ namespace TaskManager.MVC.Controllers
             }
             else
             {
-                (List<Task> tasks, string? errorMessage) = TaskService.GetAllTasks(userId.Value);
+                (List<Task>? tasks, string? errorMessage) = taskService.GetAllTasks(userId.Value);
 
                 ViewBag.ErrorMessage = errorMessage;
                 List<TaskViewModel> taskViewModels = [];
 
-                foreach (Task task in tasks)
+                if (tasks != null)
                 {
-                    TaskViewModel taskView = ConvertTaskToTaskView(task);
-                    taskViewModels.Add(taskView);
+                    foreach (Task task in tasks)
+                    {
+                        TaskViewModel taskView = ConvertTaskToTaskView(task);
+                        taskViewModels.Add(taskView);
+                    }
                 }
                 return View(taskViewModels);
             }
@@ -47,8 +41,8 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Details(int id)
         {
-            Task? task = TaskService.GetTaskById(id).Item1;
-            string errorMessage = TaskService.GetTaskById(id).Item2;
+            Task? task = taskService.GetTaskById(id).Item1;
+            string? errorMessage = taskService.GetTaskById(id).Item2;
 
             ViewBag.ErrorMessage = errorMessage;
 
@@ -75,7 +69,7 @@ namespace TaskManager.MVC.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            string errorMessage = TaskService.CreateTask(title, description, projectId, userId.Value).Item2;
+            string? errorMessage = taskService.CreateTask(title, description, projectId, userId.Value).Item2;
 
             if (errorMessage == null)
             {
@@ -93,7 +87,7 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            List<Project> projects = ProjectService.GetAllProjects().Item1;
+            List<Project>? projects = projectService.GetAllProjects().Item1;
 
             ViewBag.Projects = projects;
 
@@ -104,7 +98,7 @@ namespace TaskManager.MVC.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(TaskViewModel viewModel)
         {
-            string errorMessage = TaskService.UpdateTask(viewModel.Id, viewModel.Title, viewModel.Project_Id, viewModel.Description).Item2;
+            string? errorMessage = taskService.UpdateTask(viewModel.Id, viewModel.Title, viewModel.Project_Id, viewModel.Description).Item2;
 
             if (errorMessage == null)
             {
@@ -121,14 +115,12 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            string errorMessage = TaskService.GetTaskById(id).Item2;
+            (Task? task, string? errorMessage) = taskService.GetTaskById(id);
 
             if (errorMessage != null)
             {
                 ViewBag.ErrorMessage = errorMessage;
             }
-
-            Task? task = TaskService.GetTaskById(id).Item1;
 
             if (task == null)
             {
@@ -137,7 +129,7 @@ namespace TaskManager.MVC.Controllers
 
             TaskViewModel viewModel = ConvertTaskToTaskView(task);
             
-            List<Project>? projects = ProjectService.GetAllProjects().Item1;
+            List<Project>? projects = projectService.GetAllProjects().Item1;
             ViewBag.Projects = projects;
 
             return View(viewModel);
@@ -146,7 +138,7 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            Task? task = TaskService.GetTaskById(id).Item1;
+            Task? task = taskService.GetTaskById(id).Item1;
 
             if (task == null)
             {
@@ -162,7 +154,7 @@ namespace TaskManager.MVC.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Delete(TaskViewModel viewModel)
         {
-            string? errorMessage = TaskService.DeleteTask(viewModel.Id);
+            string? errorMessage = taskService.DeleteTask(viewModel.Id);
 
             if (errorMessage == null)
             {

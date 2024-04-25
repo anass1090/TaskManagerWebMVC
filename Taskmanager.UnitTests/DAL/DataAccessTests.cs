@@ -1,7 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using TaskManager.DAL.Connection;
-
 
 namespace TaskManager.UnitTests.DAL
 {

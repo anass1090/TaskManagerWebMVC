@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 
 namespace TaskManager.DAL.Connection
 {
@@ -15,7 +9,7 @@ namespace TaskManager.DAL.Connection
 
         public DataAccess()
         {
-            Connection = new MySqlConnection(ConnectionString);
+           Connection = new MySqlConnection(ConnectionString);
         }
 
         public void OpenConnection()
@@ -25,7 +19,7 @@ namespace TaskManager.DAL.Connection
 
         public void CloseConnection()
         {
-            Connection.Close();
+            Connection.Dispose();
         }
     }
 }

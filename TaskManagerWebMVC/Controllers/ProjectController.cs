@@ -6,32 +6,26 @@ using TaskManager.MVC.Models;
 
 namespace TaskManager.MVC.Controllers
 {
-    public class ProjectController : Controller
+    public class ProjectController(ProjectService projectService) : Controller
     {
-        private readonly ProjectService projectService;
-
-        public ProjectController()
-        {
-            ProjectRepository projectRepository = new();
-            projectService = new (projectRepository);
-        }
-
         [HttpGet]
         public ActionResult Index()
         {
-            List<Project>? projects = projectService.GetAllProjects().Item1;
-            string errorMessage = projectService.GetAllProjects().Item2;
+            (List<Project>? projects, string? errorMessage) = projectService.GetAllProjects();
 
             ViewBag.ErrorMessage = errorMessage;
 
             List<ProjectViewModel> projectViewModels = [];
 
-            foreach(Project? project in projects)
+            if (projects != null)
             {
-                if(project != null)
+                foreach (Project? project in projects)
                 {
-                    ProjectViewModel projectView = ConvertProjectToProjectView(project);
-                    projectViewModels.Add(projectView);
+                    if (project != null)
+                    {
+                        ProjectViewModel projectView = ConvertProjectToProjectView(project);
+                        projectViewModels.Add(projectView);
+                    }
                 }
             }
 

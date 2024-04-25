@@ -66,21 +66,21 @@ namespace TaskManager.DAL.Repositories
                 MySqlCommand command = new(query, dataAccess.Connection);
                 command.Parameters.AddWithValue("@Id", id);
 
-                using MySqlDataReader reader = command.ExecuteReader();
-
-                
-                if (reader.Read())
+                using (MySqlDataReader reader = command.ExecuteReader())
                 {
-                    Project project = new()
+                    if (reader.Read())
                     {
-                        Id = reader.GetInt32("Id"),
-                        Title = reader.GetString("Title"),
-                        Description = reader.GetString("Description")
-                    };
+                        Project project = new()
+                        {
+                            Id = reader.GetInt32("Id"),
+                            Title = reader.GetString("Title"),
+                            Description = reader.GetString("Description")
+                        };
 
-                    return project;
+                        return project;
+                    }
+                    return null;
                 }
-                return null;
             }
             catch (Exception ex)
             {
