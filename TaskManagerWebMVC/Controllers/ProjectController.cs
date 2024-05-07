@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaskManager.DAL.Repositories;
 using TaskManager.Logic.Services;
 using TaskManager.Logic.Models;
 using TaskManager.MVC.Models;
+using TaskManagerWebMVC.Controllers;
 
 namespace TaskManager.MVC.Controllers
 {
@@ -13,7 +13,11 @@ namespace TaskManager.MVC.Controllers
         {
             (List<Project>? projects, string? errorMessage) = projectService.GetAllProjects();
 
-            ViewBag.ErrorMessage = errorMessage;
+            if (errorMessage != null)
+            {
+                TempData["ErrorMessage"] = errorMessage;
+                return RedirectToAction(nameof(Index), "Home", null);
+            }
 
             List<ProjectViewModel> projectViewModels = [];
 
@@ -44,16 +48,22 @@ namespace TaskManager.MVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(ProjectViewModel model)
         {
-            try
+            (Project? project, string message) = projectService.CreateProject(model.Title, model.Description);
+
+            if (project == null)
             {
+                ViewBag.ErrorMessage = message;
+            }
+            else
+            {
+                TempData["successMessage"] = message;
+
                 return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
+
+            return View(model);
         }
 
         public ActionResult Edit(int id)

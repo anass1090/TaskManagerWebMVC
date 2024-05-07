@@ -4,6 +4,7 @@ using MySql.Data.MySqlClient;
 using TaskManager.DAL.Connection;
 using TaskManager.Logic.Models;
 using TaskManager.Logic.Interfaces;
+using System.Data;
 #nullable enable
 namespace TaskManager.DAL.Repositories
 {
@@ -16,19 +17,17 @@ namespace TaskManager.DAL.Repositories
             dataAccess = new();
         }
 
-        public Project? CreateProject(string title, string description, out string? errorMessage)
+        public Project? CreateProject(string title, string description)
         {
-            errorMessage = null;
             try
             {
                 dataAccess.OpenConnection();
+                
                 string query = "INSERT INTO Projects (Title, Description) VALUES (@Title, @Description)";
 
-                MySqlCommand command = new (query, dataAccess.Connection);
-
+                using MySqlCommand command = new (query, dataAccess.Connection);
                 command.Parameters.AddWithValue("@Title", title);
                 command.Parameters.AddWithValue("@Description", description);
-
                 command.ExecuteNonQuery();
 
                 int Id = (int)command.LastInsertedId;
@@ -44,7 +43,7 @@ namespace TaskManager.DAL.Repositories
             }
             catch (Exception ex)
             {
-                errorMessage = "Error creating project: " + ex.Message;
+                Console.WriteLine($"Error creating project: {ex.Message}");
                 return null;
             }
             finally
@@ -221,7 +220,6 @@ namespace TaskManager.DAL.Repositories
                     };
 
                     tasks.Add(task);
-
                 }
 
                 string projectQuery = "SELECT Id, Title, Description FROM Project WHERE Id = @Id";
@@ -234,8 +232,8 @@ namespace TaskManager.DAL.Repositories
                     Project project = new()
                     {
                         Id = tasksReader.GetInt32("id"),
-                        Title = tasksReader["Title"].ToString(),
-                        Description = tasksReader["Description"].ToString(),
+                        Title = tasksReader["Title"].ToString() ?? throw new InvalidOperationException("title is null"),
+                        Description = tasksReader["Description"].ToString() ?? throw new InvalidOperationException("description is null"),
                         Tasks = tasks
                     };
 

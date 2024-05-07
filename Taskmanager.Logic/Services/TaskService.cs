@@ -33,8 +33,9 @@ namespace TaskManager.Logic.Managers
 
             if (errorMessage != null)
             {
-                return errorMessage;
-            } else
+                return "Something went wrong while deleting the task, try again later.";
+            } 
+            else
             {
                 return null;
             }
@@ -44,6 +45,10 @@ namespace TaskManager.Logic.Managers
         {
             List<Task>? tasks = taskRepository.GetAllTasks(userId, out string? errorMessage);
 
+            if (tasks == null && errorMessage != null)
+            {
+                return (tasks, "Something went wrong while trying to fetch your tasks, try again later.");
+            }
             return (tasks, errorMessage);
         }
     }

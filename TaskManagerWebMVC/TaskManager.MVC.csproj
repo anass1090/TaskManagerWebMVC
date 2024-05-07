@@ -16,8 +16,4 @@
     <ProjectReference Include="..\Taskmanager.Logic\TaskManager.Logic.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Views\Project\" />
-  </ItemGroup>
-
 </Project>

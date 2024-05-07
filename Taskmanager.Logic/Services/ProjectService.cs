@@ -6,18 +6,30 @@ namespace TaskManager.Logic.Services
 {
     public class ProjectService(IProjectRepository projectRepository)
     {
-        public (Project?, string?) CreateProject(string title, string description, out string? errorMessage)
+        public (Project?, string) CreateProject(string title, string description)
         {
-            Project? project = projectRepository.CreateProject(title, description, out errorMessage);
+            Project? project = projectRepository.CreateProject(title, description);
+            string errorMessage;
 
-            return (project, errorMessage);
+            if (project == null)
+            {
+                errorMessage = "Something went wrong creating the project.";
+                return (null, errorMessage);
+            }
+
+            return (project, "Project created successfully.");
         }
 
         public (List<Project>?, string?) GetAllProjects()
         {
             List<Project>? projects = projectRepository.GetAllProjects(out string? errorMessage);
 
-            return (projects, errorMessage);
+            if (errorMessage != null)
+            {
+                return (null, "Something went wrong while fetching your projects. Try again later.");
+            }
+
+            return (projects, null);
         }
 
         public (Project?, string?) GetProjectById(int id)
