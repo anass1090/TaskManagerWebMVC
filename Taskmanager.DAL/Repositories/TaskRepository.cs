@@ -185,7 +185,7 @@ namespace TaskManager.DAL.Repositories
 
                 return tasks;
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 errorMessage = "Error fetching tasks: " + ex.Message;
                 return null;

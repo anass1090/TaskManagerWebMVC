@@ -2,7 +2,6 @@
 using TaskManager.Logic.Services;
 using TaskManager.Logic.Models;
 using TaskManager.MVC.Models;
-using TaskManagerWebMVC.Controllers;
 
 namespace TaskManager.MVC.Controllers
 {

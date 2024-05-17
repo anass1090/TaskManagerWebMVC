@@ -41,9 +41,8 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Details(int id)
         {
-            Task? task = taskService.GetTaskById(id).Item1;
-            string? errorMessage = taskService.GetTaskById(id).Item2;
-
+            (Task? task, string? errorMessage) = taskService.GetTaskById(id);
+            
             ViewBag.ErrorMessage = errorMessage;
 
             if (task != null)
@@ -118,7 +117,7 @@ namespace TaskManager.MVC.Controllers
             (Task? task, string? errorMessage) = taskService.GetTaskById(id);
 
             if (errorMessage != null)
-            {
+            {   
                 ViewBag.ErrorMessage = errorMessage;
             }
 

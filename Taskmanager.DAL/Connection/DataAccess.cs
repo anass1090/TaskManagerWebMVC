@@ -13,7 +13,7 @@ namespace TaskManager.DAL.Connection
         }
 
         public void OpenConnection()
-        {
+        { 
             Connection.Open();
         }
 

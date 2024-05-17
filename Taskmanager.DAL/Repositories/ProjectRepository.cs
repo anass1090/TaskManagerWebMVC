@@ -4,7 +4,6 @@ using MySql.Data.MySqlClient;
 using TaskManager.DAL.Connection;
 using TaskManager.Logic.Models;
 using TaskManager.Logic.Interfaces;
-using System.Data;
 #nullable enable
 namespace TaskManager.DAL.Repositories
 {
@@ -251,6 +250,29 @@ namespace TaskManager.DAL.Repositories
             { 
                 dataAccess.CloseConnection(); 
             }
+        }
+    }
+
+    public void DeleteUserFromProject(int projectId, int userId, out string? errorMessage)
+    {
+        errorMessage = null;
+        try
+        {
+            dataAccess.OpenConnection();
+
+            string query = "DELETE FROM UsersProjects WHERE ProjectId = @ProjectId AND UserId = @UserId";
+            using MySqlCommand command = new(query, dataAccess.Connection);
+            command.Parameters.AddWithValue("@ProjectId", projectId);
+            command.Parameters.AddWithValue("@UserId", userId);
+            command.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Error removing user from project: " + ex.Message;
+        }
+        finally
+        {
+            dataAccess.CloseConnection();
         }
     }
 }
