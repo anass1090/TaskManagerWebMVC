@@ -1,4 +1,5 @@
-﻿using TaskManager.Logic.Interfaces;
+﻿using System.Collections.Generic;
+using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
 #nullable enable
 namespace TaskManager.Logic.Services
@@ -38,6 +39,13 @@ namespace TaskManager.Logic.Services
             User? user = userRepository.GetUserById(id, out string? errorMessage);
 
             return (user, errorMessage);
+        }
+
+        public (List<User>?, string?) GetAllUsers()
+        {
+            List<User>? users = userRepository.GetAllUsers(out string? errorMessage);
+
+            return (users, errorMessage);
         }
     }
 }

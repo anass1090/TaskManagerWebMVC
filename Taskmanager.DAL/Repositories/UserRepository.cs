@@ -1,5 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using TaskManager.DAL.Connection;
 using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
@@ -147,6 +148,48 @@ namespace TaskManager.DAL.Repositories
             catch (Exception ex)
             {
                 errorMessage = "Error retrieving user: " + ex.Message;
+                return null;
+            }
+            finally
+            {
+                dataAccess.CloseConnection();
+            }
+        }
+        
+        public List<User>? GetAllUsers(out string? errorMessage)
+        {
+            List<User> users = [];
+
+            errorMessage = null;
+
+            try
+            {
+                dataAccess.OpenConnection();
+
+                string query = "SELECT Id, FirstName, LastName, Password, Email FROM users";
+
+                MySqlCommand command = new(query, dataAccess.Connection);
+
+                using MySqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    User user = new()
+                    {
+                        Id = reader.GetInt32("Id"),
+                        FirstName = reader["FirstName"].ToString(),
+                        LastName = reader["LastName"].ToString(),
+                        Email = reader["Email"].ToString(),
+                        Password = reader["Password"].ToString()
+                    };
+
+                    users.Add(user);
+                }
+                return users;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "Error fetching projects: " + ex.Message;
                 return null;
             }
             finally

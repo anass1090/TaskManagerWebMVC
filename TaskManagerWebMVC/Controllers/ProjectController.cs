@@ -5,7 +5,7 @@ using TaskManager.MVC.Models;
 
 namespace TaskManager.MVC.Controllers
 {
-    public class ProjectController(ProjectService projectService) : Controller
+    public class ProjectController(ProjectService projectService, UserService userService) : Controller
     {
         [HttpGet]
         public ActionResult Index()
@@ -42,6 +42,10 @@ namespace TaskManager.MVC.Controllers
 
         public ActionResult Create()
         {
+           (List<User>? users, string? errorMessage) = userService.GetAllUsers();
+
+            ViewBag.Users = users;
+
             return View();
         }
 
@@ -49,7 +53,7 @@ namespace TaskManager.MVC.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(ProjectViewModel model)
         {
-            (Project? project, string message) = projectService.CreateProject(model.Title, model.Description);
+            (Project? project, string message) = projectService.CreateProject(model.Title, model.Description, model.SelectedUserIds);
 
             if (project == null)
             {

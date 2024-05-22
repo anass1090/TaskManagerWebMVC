@@ -6,9 +6,9 @@ namespace TaskManager.Logic.Services
 {
     public class ProjectService(IProjectRepository projectRepository)
     {
-        public (Project?, string) CreateProject(string title, string description)
+        public (Project?, string) CreateProject(string title, string description, List<int> selectedUserIds)
         {
-            Project? project = projectRepository.CreateProject(title, description);
+            Project? project = projectRepository.CreateProject(title, description, selectedUserIds);
             string errorMessage;
 
             if (project == null)
@@ -39,9 +39,9 @@ namespace TaskManager.Logic.Services
             return (project, errorMessage);
         }
 
-        public (Project?, string?) UpdateProject(int id,  string title, string description, out string? errorMessage)
+        public (Project?, string?) UpdateProject(int id, string title, string description, List<int>? userIdsToAdd, List<int>? userIdsToRemove, out string? errorMessage)
         {
-            Project? project = projectRepository.UpdateProject(id, title, description, out errorMessage);
+            Project? project = projectRepository.UpdateProject(id, title, description, userIdsToAdd, userIdsToRemove, out errorMessage);
 
             return (project, errorMessage);
         }

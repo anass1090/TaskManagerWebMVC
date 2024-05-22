@@ -1,4 +1,4 @@
-﻿@model TaskManager.MVC.Models.ProjectViewModel
+﻿ @model TaskManager.MVC.Models.ProjectViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -24,6 +24,7 @@
         @TempData["SuccessMessage"]
     </div>
 }
+
 <h1>Create</h1>
 
 <h4>ProjectViewModel</h4>
@@ -43,6 +44,16 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label class="control-label">Users</label>
+                <select asp-for="SelectedUserIds" class="form-control" multiple>
+                    @foreach (var user in ViewBag.Users)
+                    {
+                        <option value="@user.Id">@user.Email</option>
+                    }
+                </select>
+                <span asp-validation-for="SelectedUserIds" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
@@ -54,5 +65,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
