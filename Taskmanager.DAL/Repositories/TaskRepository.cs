@@ -61,7 +61,7 @@ namespace TaskManager.DAL.Repositories
             try {
                 dataAccess.OpenConnection();
 
-                string query = "SELECT Id, Title, Description, Project_Id FROM Tasks WHERE Id = @Id";
+                string query = "SELECT Id, Title, Description, Project_Id, User_Id FROM Tasks WHERE Id = @Id";
 
                 MySqlCommand command = new(query, dataAccess.Connection);
                 command.Parameters.AddWithValue("@Id", id);
@@ -75,7 +75,8 @@ namespace TaskManager.DAL.Repositories
                         Id = reader.GetInt32("Id"),
                         Title = reader.GetString("Title"),
                         Description = reader.GetString("Description"),
-                        Project_Id = reader["Project_Id"] as Int32?
+                        Project_Id = reader["Project_Id"] as Int32?,
+                        User_Id = reader["User_Id"] as Int32?
                     };
 
                     return task;

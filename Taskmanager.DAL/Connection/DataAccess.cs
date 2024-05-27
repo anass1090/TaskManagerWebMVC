@@ -19,7 +19,7 @@ namespace TaskManager.DAL.Connection
 
         public void CloseConnection()
         {
-            Connection.Dispose();
+            Connection.Close();
         }
     }
 }

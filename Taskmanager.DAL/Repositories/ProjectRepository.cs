@@ -191,17 +191,18 @@ namespace TaskManager.DAL.Repositories
 
                     projects.Add(project);
                 }
+                return projects;
             }
             catch (Exception ex)
             {
                 errorMessage = "Error fetching projects: " + ex.Message;
+                return null;
             }
             finally
             {
                 dataAccess.CloseConnection();
             }
 
-            return projects;
         }
 
         public (List<Task>?, Project?) GetTasksByProject(int projectId, out string? errorMessage)
@@ -215,7 +216,7 @@ namespace TaskManager.DAL.Repositories
                 string tasksQuery = "SELECT Id, Title, Description FROM Tasks WHERE Project_Id = @projectId";
 
                 MySqlCommand tasksCommand = new(tasksQuery, dataAccess.Connection);
-                tasksCommand.Parameters.AddWithValue("@Project_Id", projectId);
+                tasksCommand.Parameters.AddWithValue("@Project_Id", projectId); 
                 using MySqlDataReader tasksReader = tasksCommand.ExecuteReader();
 
                 List<Task> tasks = [];
@@ -234,7 +235,7 @@ namespace TaskManager.DAL.Repositories
 
                 return (null, null);
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 errorMessage = "Error fetching tasks for project: " + ex.Message;
                 return (null, null);
@@ -308,7 +309,7 @@ namespace TaskManager.DAL.Repositories
 
                 return users;
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 errorMessage = "Error fetching users for project: " + ex.Message;
                 return null;

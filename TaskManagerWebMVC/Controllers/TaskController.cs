@@ -41,7 +41,8 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Details(int id)
         {
-            (Task? task, string? errorMessage) = taskService.GetTaskById(id);
+            int? userId = HttpContext.Session.GetInt32("userId");
+            (Task? task, string? errorMessage) = taskService.GetTaskById(id, userId);
             
             ViewBag.ErrorMessage = errorMessage;
 
@@ -51,7 +52,7 @@ namespace TaskManager.MVC.Controllers
                 return View(taskView);
             } else
             {
-                return NotFound();
+                return RedirectToAction("Index", "Home");
             }
 
         }
@@ -97,7 +98,8 @@ namespace TaskManager.MVC.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(TaskViewModel viewModel)
         {
-            string? errorMessage = taskService.UpdateTask(viewModel.Id, viewModel.Title, viewModel.Project_Id, viewModel.Description).Item2;
+            int? userId = HttpContext.Session.GetInt32("userId");
+            string? errorMessage = taskService.UpdateTask(viewModel.Id, viewModel.Title, viewModel.Project_Id, viewModel.Description, userId).Item2;
 
             if (errorMessage == null)
             {
@@ -114,7 +116,8 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            (Task? task, string? errorMessage) = taskService.GetTaskById(id);
+            int? userId = HttpContext.Session.GetInt32("userId");
+            (Task? task, string? errorMessage) = taskService.GetTaskById(id, userId);
 
             if (errorMessage != null)
             {   
@@ -123,7 +126,8 @@ namespace TaskManager.MVC.Controllers
 
             if (task == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = errorMessage;
+                return RedirectToAction("Index", "Home");
             }
 
             TaskViewModel viewModel = ConvertTaskToTaskView(task);
@@ -137,7 +141,8 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            Task? task = taskService.GetTaskById(id).Item1;
+            int? userId = HttpContext.Session.GetInt32("userId");
+            Task? task = taskService.GetTaskById(id, userId).Item1;
 
             if (task == null)
             {
