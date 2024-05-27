@@ -89,7 +89,7 @@ namespace TaskManager.DAL.Repositories
                 }
                 return null;
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 errorMessage = "Error fetching project: " + ex.Message;
                 return null;
@@ -127,7 +127,7 @@ namespace TaskManager.DAL.Repositories
                 return updatedProject;
 
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 errorMessage = "Error updating project: " + ex.Message;
                 return null;
@@ -154,7 +154,7 @@ namespace TaskManager.DAL.Repositories
 
                 command.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 errorMessage = "Error deleting project: " + ex.Message;
             }
@@ -193,7 +193,7 @@ namespace TaskManager.DAL.Repositories
                 }
                 return projects;
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 errorMessage = "Error fetching projects: " + ex.Message;
                 return null;
@@ -257,7 +257,7 @@ namespace TaskManager.DAL.Repositories
                 command.Parameters.AddWithValue("@UserId", userId);
                 command.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 errorMessage = "Error removing user from project: " + ex.Message;
             }
