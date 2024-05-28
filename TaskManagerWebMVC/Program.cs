@@ -12,7 +12,18 @@ builder.Services.AddSession();
 // Register repositories and services
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>(provider =>
+{
+    string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (connectionString == null)
+    {
+        throw new InvalidOperationException("Connection string is not configured.");
+    } else
+    {
+        return new UserRepository(connectionString);
+    }
+});
+
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<ProjectService>();

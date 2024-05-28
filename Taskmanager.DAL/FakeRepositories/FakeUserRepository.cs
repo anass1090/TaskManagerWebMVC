@@ -7,7 +7,7 @@ using TaskManager.Logic.Models;
 #nullable enable
 namespace TaskManager.DAL.Repositories
 {
-    public class UserRepository(string connectionString) : IUserRepository
+    public class FakeUserRepository(string connectionString) : IUserRepository
     {
         private readonly MySqlConnection dataAccess = new(connectionString);
 
