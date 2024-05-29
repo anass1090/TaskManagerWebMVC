@@ -13,9 +13,16 @@ namespace TaskManager.Logic.Managers
             {
                 return (null, "Not all required fields have been filled in, check this and try again.");
             }
+
             Task? task = taskRepository.CreateTask(title, description, projectId, userId, out string? errorMessage);
 
-            return (task, errorMessage);
+            if (task != null)
+            {
+                return (task, null);
+            } else
+            {
+                return (null, "Something went wrong while creating the task, try again.");
+            }
         }
 
         public (Task?, string?) GetTaskById(int id, int? userId)

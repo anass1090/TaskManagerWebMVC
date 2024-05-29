@@ -6,7 +6,7 @@ using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
 
 #nullable enable
-namespace TaskManager.DAL.Repositories
+namespace TaskManager.DAL.FakeRepositories
 {
     public class FakeTaskRepository : ITaskRepository
     {
@@ -22,25 +22,13 @@ namespace TaskManager.DAL.Repositories
             errorMessage = null;
             try
             {
-                dataAccess.OpenConnection();
-                string query = "INSERT INTO Tasks (Title, Description, Project_Id, User_Id) VALUES (@Title, @Description, @Project_Id, @User_Id)";
-
-                using MySqlCommand command = new (query, dataAccess.Connection);
-
-                command.Parameters.AddWithValue("@Title", title);
-                command.Parameters.AddWithValue("@Description", description);
-                command.Parameters.AddWithValue("@Project_Id", projectId);
-                command.Parameters.AddWithValue("@User_Id", userId);
-
-                command.ExecuteNonQuery();
-
-                int Id = (int)command.LastInsertedId;
-
                 Task task = new()
                 {
-                    Id = Id,
+                    Id = 1,
                     Title = title,
-                    Description = description
+                    Description = description,
+                    Project_Id = projectId,
+                    User_Id = userId,
                 };
 
                 return task;

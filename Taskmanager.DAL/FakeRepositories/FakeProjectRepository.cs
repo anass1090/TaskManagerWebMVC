@@ -5,7 +5,7 @@ using TaskManager.DAL.Connection;
 using TaskManager.Logic.Models;
 using TaskManager.Logic.Interfaces;
 #nullable enable
-namespace TaskManager.DAL.Repositories
+namespace TaskManager.DAL.FakeRepositories
 {
     public class FakeProjectRepository : IProjectRepository
     {
