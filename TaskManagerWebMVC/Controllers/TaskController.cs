@@ -4,6 +4,7 @@ using TaskManagerWebMVC.Models;
 using Task = TaskManager.Logic.Models.Task;
 using TaskManager.Logic.Models;
 using TaskManager.Logic.Services;
+using TaskManager.Logic.Exceptions;
 
 namespace TaskManager.MVC.Controllers
 {
@@ -69,19 +70,18 @@ namespace TaskManager.MVC.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            string? errorMessage = taskService.CreateTask(title, description, projectId, userId.Value).Item2;
-
-            if (errorMessage == null)
+            try
             {
+                taskService.CreateTask(title, description, projectId, userId.Value);
+
                 TempData["SuccessMessage"] = "Task created successfully";
                 return RedirectToAction("Index");
-            }
-            else
-            {
-                ViewBag.ErrorMessage = errorMessage;
-                return View("Create");
-            }
 
+            } catch (TaskException ex)
+            {
+                TempData["ErrorMessage"] = "Error while creating task: " + ex.Message;
+                return RedirectToAction("Create");
+            }
         }
 
         [HttpGet]

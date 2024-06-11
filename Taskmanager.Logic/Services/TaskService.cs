@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using TaskManager.Logic.Interfaces;
-using TaskManager.Logic.Models;
 using Task = TaskManager.Logic.Models.Task;
+using TaskManager.Logic.Exceptions;
 #nullable enable
 namespace TaskManager.Logic.Managers
 {
@@ -11,8 +11,13 @@ namespace TaskManager.Logic.Managers
         {
             if (title == null || description == null)
             {
-                return (null, "Not all required fields have been filled in, check this and try again.");
-            }
+                //Throwing exception instead of just returning error message
+                throw new TaskException("Title and / or description is empty.");
+                //return (null, "Not all required fields have been filled in, check this and try again.");
+            } else if (title.Length > 50 || description.Length > 1000)
+            {
+                return (null, "Too many characters in your title or description, try again.");
+            }   
 
             Task? task = taskRepository.CreateTask(title, description, projectId, userId, out string? errorMessage);
 
@@ -54,9 +59,9 @@ namespace TaskManager.Logic.Managers
 
         public string? DeleteTask(int id)
         {
-            taskRepository.DeleteTask(id, out string? errorMessage);
+            bool isDeleted = taskRepository.DeleteTask(id, out string? errorMessage);
 
-            if (errorMessage != null)
+            if (isDeleted == false)
             {
                 return "Something went wrong while deleting the task, try again later.";
             } 

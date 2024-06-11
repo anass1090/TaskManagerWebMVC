@@ -132,7 +132,7 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public void DeleteTask(int id, out string? errorMessage)
+        public bool DeleteTask(int id, out string? errorMessage)
         {
             errorMessage = null;
 
@@ -147,9 +147,12 @@ namespace TaskManager.DAL.Repositories
                 command.Parameters.AddWithValue("@Id", id);
 
                 command.ExecuteNonQuery();
-            } catch(Exception ex)
+
+                return true;
+            } catch(MySqlException ex)
             {
                 errorMessage = "Error deleting task: " + ex.Message;
+                return false;
             } finally { 
                 dataAccess.CloseConnection(); 
             }

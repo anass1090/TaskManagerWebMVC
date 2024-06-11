@@ -1,7 +1,5 @@
 ﻿using System;
-using MySql.Data.MySqlClient;
 using System.Collections.Generic;
-using TaskManager.DAL.Connection;
 using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
 
@@ -10,11 +8,8 @@ namespace TaskManager.DAL.FakeRepositories
 {
     public class FakeTaskRepository : ITaskRepository
     {
-        private readonly DataAccess dataAccess;
-
         public FakeTaskRepository()
         {
-            dataAccess = new();
         }
 
         public Task? CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
@@ -37,48 +32,29 @@ namespace TaskManager.DAL.FakeRepositories
                 errorMessage = "Error creating task: " + ex.Message;
                 return null;
             }
-            finally {
-                dataAccess.CloseConnection();
-            }
+          
         }
 
         public Task? GetTaskById(int id, out string? errorMessage)
         {
             errorMessage = null;
 
-            try {
-                dataAccess.OpenConnection();
-
-                string query = "SELECT Id, Title, Description, Project_Id, User_Id FROM Tasks WHERE Id = @Id";
-
-                MySqlCommand command = new(query, dataAccess.Connection);
-                command.Parameters.AddWithValue("@Id", id);
-
-                using MySqlDataReader reader = command.ExecuteReader();
-
-                if (reader.Read())
+            try 
+            {
+                Task task = new()
                 {
-                    Task task = new()
-                    {
-                        Id = reader.GetInt32("Id"),
-                        Title = reader.GetString("Title"),
-                        Description = reader.GetString("Description"),
-                        Project_Id = reader["Project_Id"] as Int32?,
-                        User_Id = reader["User_Id"] as Int32?
-                    };
-
-                    return task;
-                }
+                    Id = 1,
+                    Title = "Test title",
+                    Description = "Test description",
+                    Project_Id = 3,
+                    User_Id = 2
+                };
 
                 return null;
             }
             catch (Exception ex) {
                 errorMessage = "Error fetching task: " + ex.Message;
                 return null;
-
-            }
-            finally { 
-                dataAccess.CloseConnection(); 
             }
         }
 
@@ -87,18 +63,6 @@ namespace TaskManager.DAL.FakeRepositories
             errorMessage = null;
             try
             {
-                dataAccess.OpenConnection();
-
-                string query = "UPDATE Tasks SET Title = @Title, Description = @Description, Project_Id = @Project_Id WHERE Id = @Id";
-                using MySqlCommand command = new(query, dataAccess.Connection);
-
-                command.Parameters.AddWithValue("@Id", id);
-                command.Parameters.AddWithValue("@Title", title);
-                command.Parameters.AddWithValue("@Description", description);
-                command.Parameters.AddWithValue("@Project_Id", projectId);
-
-                command.ExecuteNonQuery();
-
                 Task updatedTask = new()
                 { 
                     Id = id,
@@ -114,74 +78,40 @@ namespace TaskManager.DAL.FakeRepositories
                 errorMessage = "Error updating task: " + ex.Message;
                 return null;
             }
-            finally
-            {
-                dataAccess.CloseConnection();
-            }
         }
 
-        public void DeleteTask(int id, out string? errorMessage)
+        public bool DeleteTask(int id, out string? errorMessage)
         {
             errorMessage = null;
-
-            try
+               
+            if (id == 1)
             {
-                dataAccess.OpenConnection();
-                
-                string query = "DELETE FROM Tasks WHERE Id = @Id";
-
-                using MySqlCommand command = new(query, dataAccess.Connection);
-
-                command.Parameters.AddWithValue("@Id", id);
-
-                command.ExecuteNonQuery();
-            } catch(Exception ex)
+                return true;
+            } else
             {
-                errorMessage = "Error deleting task: " + ex.Message;
-            } finally { 
-                dataAccess.CloseConnection(); 
+                return false;
             }
         }
 
         public List<Task>? GetAllTasks(int userId, out string? errorMessage)
         {
-            List<Task> tasks = [];
-
             errorMessage = null;
 
             try
             {
-                dataAccess.OpenConnection();
-
-                string query = "SELECT Id, Title, Description FROM Tasks WHERE User_Id = @userId";
-
-                using MySqlCommand command = new(query, dataAccess.Connection);
-                command.Parameters.AddWithValue("@userId", userId);
-
-                using MySqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    Task task = new()
-                    {
-                        Id = reader.GetInt32("id"),
-                        Title = reader["Title"].ToString(),
-                        Description = reader["Description"].ToString(),
-                    };
-
-                    tasks.Add(task);
-                }
-
+                List<Task> tasks =
+                [
+                    new Task { Id = 1, Title = "Test Title 1", Description = "Test description 1" },
+                    new Task { Id = 2, Title = "Test Title 2" , Description = "Test description 2" },
+                    new Task { Id = 3, Title = "Test Title 3" , Description = "Test description 3" } 
+                ];
+                
                 return tasks;
             }
-            catch (MySqlException ex)
+            catch (Exception ex)
             {
                 errorMessage = "Error fetching tasks: " + ex.Message;
                 return null;
-            }
-            finally
-            {
-                dataAccess.CloseConnection();
             }
         }
     }
