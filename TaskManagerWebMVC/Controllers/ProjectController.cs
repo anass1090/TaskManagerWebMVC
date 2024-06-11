@@ -8,7 +8,7 @@ namespace TaskManager.MVC.Controllers
     public class ProjectController(ProjectService projectService, UserService userService) : Controller
     {
         [HttpGet]
-        public ActionResult Index()
+        public object Index()
         {
             (List<Project>? projects, string? errorMessage) = projectService.GetAllProjects();
 
@@ -26,8 +26,12 @@ namespace TaskManager.MVC.Controllers
                 {
                     if (project != null)
                     {
-                        ProjectViewModel projectView = ConvertProjectToProjectView(project);
-                        projectViewModels.Add(projectView);
+                        ProjectViewModel? projectView = ConvertProjectToProjectView(project);
+
+                        if (projectView != null)
+                        {
+                            projectViewModels.Add(projectView);
+                        }
                     }
                 }
             }
@@ -53,7 +57,15 @@ namespace TaskManager.MVC.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(ProjectViewModel model)
         {
-            (Project? project, string message) = projectService.CreateProject(model.Title, model.Description, model.SelectedUserIds);
+            Project? project; string message;
+
+            if (model.SelectedUserIds != null)
+            {
+                (project, message) = projectService.CreateProject(model.Title, model.Description, model.SelectedUserIds);
+            } else
+            {
+                (project, message) = projectService.CreateProject(model.Title, model.Description, null);
+            }
 
             if (project == null)
             {
@@ -107,16 +119,22 @@ namespace TaskManager.MVC.Controllers
             }
         }
 
-        private static ProjectViewModel ConvertProjectToProjectView(Project project)
+        private static ProjectViewModel? ConvertProjectToProjectView(Project project)
         {
-            ProjectViewModel projectView = new()
+            if (project.Title != null && project.Description != null)
             {
-                Id = project.Id,
-                Title = project.Title,
-                Description = project.Description,
-            };
 
-            return projectView;
+                ProjectViewModel projectView = new()
+                {
+                    Id = project.Id,
+                    Title = project.Title,
+                    Description = project.Description,
+                };
+
+                return projectView;
+            }
+
+            return null;
         }
     }
 }

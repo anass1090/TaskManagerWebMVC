@@ -223,12 +223,7 @@ namespace TaskManager.DAL.FakeRepositories
 
                 while (tasksReader.Read())
                 {
-                    Task task = new()
-                    {
-                        Id = tasksReader.GetInt32("id"),
-                        Title = tasksReader["Title"].ToString(),
-                        Description = tasksReader["Description"].ToString(),
-                    };
+                    Task task = new(tasksReader.GetInt32("id"), tasksReader["Title"].ToString(), tasksReader["Description"].ToString(), projectId);
 
                     tasks.Add(task);
                 }

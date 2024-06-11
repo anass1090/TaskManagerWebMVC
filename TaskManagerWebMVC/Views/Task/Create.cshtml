@@ -55,11 +55,14 @@
                 <select asp-for="Project_Id" class="form-control">
 
                     <option value="">select a project</option>
-                    @foreach (var project in ViewBag.Projects)
+                    @if(ViewBag.Projects != null)
                     {
-                        <option value="@project.Id">
-                            @project.Title
-                        </option>
+                        @foreach (var project in ViewBag.Projects)
+                        {
+                            <option value="@project.Id">
+                                @project.Title
+                            </option>
+                        }
                     }
                 </select>
             </div>

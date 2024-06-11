@@ -2,31 +2,31 @@
 using TaskManager.Logic.Interfaces;
 using Task = TaskManager.Logic.Models.Task;
 using TaskManager.Logic.Exceptions;
+using TaskManager.Logic.Models;
+using System.Threading.Tasks;
 #nullable enable
 namespace TaskManager.Logic.Managers
 {
     public class TaskService(ITaskRepository taskRepository)
     {
-        public (Task?, string?) CreateTask(string title, string description, int? projectId, int userId)
+        public Task CreateTask(string title, string description, int? projectId, int userId)
         {
             if (title == null || description == null)
             {
-                //Throwing exception instead of just returning error message
                 throw new TaskException("Title and / or description is empty.");
-                //return (null, "Not all required fields have been filled in, check this and try again.");
-            } else if (title.Length > 50 || description.Length > 1000)
+            }
+            else if (title.Length > 50 || description.Length > 1000)
             {
-                return (null, "Too many characters in your title or description, try again.");
-            }   
+                throw new TaskException("Too many characters in your title or description, try again.");
+            }
 
-            Task? task = taskRepository.CreateTask(title, description, projectId, userId, out string? errorMessage);
-
-            if (task != null)
+            try
             {
-                return (task, null);
-            } else
+                return taskRepository.CreateTask(title, description, projectId, userId, out string? errorMessage);
+            }
+            catch (TaskException)
             {
-                return (null, "Something went wrong while creating the task, try again.");
+                throw new TaskException("try again later.");
             }
         }
 

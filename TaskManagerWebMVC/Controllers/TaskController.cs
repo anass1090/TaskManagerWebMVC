@@ -5,6 +5,7 @@ using Task = TaskManager.Logic.Models.Task;
 using TaskManager.Logic.Models;
 using TaskManager.Logic.Services;
 using TaskManager.Logic.Exceptions;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 
 namespace TaskManager.MVC.Controllers
 {
@@ -60,36 +61,47 @@ namespace TaskManager.MVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(string title, string description, int? projectId)
+        public IActionResult Create(TaskViewModel model)
         {
-            int? userId = HttpContext.Session.GetInt32("userId");
-
-            if (userId == null)
+            if (!ModelState.IsValid)
             {
-                TempData["errorMessage"] = "something went wrong try logging in again.";
-                return RedirectToAction("Login", "Login");
+                ViewBag.Projects = projectService.GetAllProjects().Item1;
+                return View(model);
             }
 
             try
             {
-                taskService.CreateTask(title, description, projectId, userId.Value);
+                taskService.CreateTask(model.Title, model.Description, model.Project_Id, HttpContext.Session.GetInt32("userId").Value);
 
                 TempData["SuccessMessage"] = "Task created successfully";
-                return RedirectToAction("Index");
-
-            } catch (TaskException ex)
+                return RedirectToAction(nameof(Index));
+            }
+            catch (TaskException ex)
             {
                 TempData["ErrorMessage"] = "Error while creating task: " + ex.Message;
-                return RedirectToAction("Create");
+                ViewBag.Projects = projectService.GetAllProjects().Item1;
+                return RedirectToAction(nameof(Create));
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "Error while creating task, try again later.";
+                ViewBag.Projects = projectService.GetAllProjects().Item1;
+                return RedirectToAction(nameof(Create));
             }
         }
 
         [HttpGet]
         public IActionResult Create()
         {
-            List<Project>? projects = projectService.GetAllProjects().Item1;
+            int? userId = HttpContext.Session.GetInt32("userId");
 
-            ViewBag.Projects = projects;
+            if (userId == null)
+            {
+                TempData["errorMessage"] = "something went wrong try logging in again.";
+                return RedirectToAction(nameof(Login), nameof(Login));
+            }
+
+            (ViewBag.Projects, string errorMesage) = projectService.GetAllProjects();
 
             return View();
         }

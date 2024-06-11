@@ -6,7 +6,7 @@ namespace TaskManager.Logic.Services
 {
     public class ProjectService(IProjectRepository projectRepository)
     {
-        public (Project?, string) CreateProject(string title, string description, List<int> selectedUserIds)
+        public (Project?, string) CreateProject(string title, string description, List<int>? selectedUserIds)
         {
             Project? project = projectRepository.CreateProject(title, description, selectedUserIds);
             string errorMessage;

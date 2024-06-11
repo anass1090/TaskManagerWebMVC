@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TaskManager.Logic.Exceptions;
 using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
 
@@ -12,25 +13,18 @@ namespace TaskManager.DAL.FakeRepositories
         {
         }
 
-        public Task? CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
+        public Task CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
         {
             errorMessage = null;
             try
             {
-                Task task = new()
-                {
-                    Id = 1,
-                    Title = title,
-                    Description = description,
-                    Project_Id = projectId,
-                    User_Id = userId,
-                };
+                Task task = new(1, title, description, projectId, userId);
 
                 return task;
                 
             } catch (Exception ex) {
                 errorMessage = "Error creating task: " + ex.Message;
-                return null;
+                throw new TaskException();
             }
           
         }
@@ -41,15 +35,8 @@ namespace TaskManager.DAL.FakeRepositories
 
             try 
             {
-                Task task = new()
-                {
-                    Id = 1,
-                    Title = "Test title",
-                    Description = "Test description",
-                    Project_Id = 3,
-                    User_Id = 2
-                };
-
+                Task task = new(1, "Test title", "Test description", 3, 2);
+              
                 return null;
             }
             catch (Exception ex) {
@@ -63,13 +50,7 @@ namespace TaskManager.DAL.FakeRepositories
             errorMessage = null;
             try
             {
-                Task updatedTask = new()
-                { 
-                    Id = id,
-                    Title = title,
-                    Description = description,
-                    Project_Id = projectId,
-                };
+                Task updatedTask = new(id, title, description, projectId, null);
 
                 return updatedTask;
 
@@ -101,9 +82,9 @@ namespace TaskManager.DAL.FakeRepositories
             {
                 List<Task> tasks =
                 [
-                    new Task { Id = 1, Title = "Test Title 1", Description = "Test description 1" },
-                    new Task { Id = 2, Title = "Test Title 2" , Description = "Test description 2" },
-                    new Task { Id = 3, Title = "Test Title 3" , Description = "Test description 3" } 
+                    new Task(1, "Test Title 1", "Test description 1", null, null),
+                    new Task(2, "Test Title 2" , "Test description 2", null, null),
+                    new Task(3, "Test Title 3" , "Test description 3", null, null) 
                 ];
                 
                 return tasks;
@@ -113,6 +94,11 @@ namespace TaskManager.DAL.FakeRepositories
                 errorMessage = "Error fetching tasks: " + ex.Message;
                 return null;
             }
+        }
+
+        private static Task CreateTaskObject(int id, string title, string description, int? projectId, int? userId)
+        {
+            return new Task(id, title, description, projectId, userId);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TaskManager.DAL.Connection;
 using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
+using TaskManager.Logic.Exceptions;
 
 #nullable enable
 namespace TaskManager.DAL.Repositories
@@ -17,7 +18,7 @@ namespace TaskManager.DAL.Repositories
             dataAccess = new();
         }
 
-        public Task? CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
+        public Task CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
         {
             errorMessage = null;
             try
@@ -32,22 +33,21 @@ namespace TaskManager.DAL.Repositories
                 command.Parameters.AddWithValue("@Project_Id", projectId);
                 command.Parameters.AddWithValue("@User_Id", userId);
 
-                command.ExecuteNonQuery();
-
                 int Id = (int)command.LastInsertedId;
+                Task task = new(Id, title, description);
 
-                Task task = new()
-                {
-                    Id = Id,
-                    Title = title,
-                    Description = description
-                };
+                command.ExecuteNonQuery();
 
                 return task;
                 
-            } catch (Exception ex) {
-                errorMessage = "Error creating task: " + ex.Message;
-                return null;
+            } catch (MySqlException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new TaskException();
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new TaskException();
             }
             finally {
                 dataAccess.CloseConnection();
@@ -70,14 +70,7 @@ namespace TaskManager.DAL.Repositories
 
                 if (reader.Read())
                 {
-                    Task task = new()
-                    {
-                        Id = reader.GetInt32("Id"),
-                        Title = reader.GetString("Title"),
-                        Description = reader.GetString("Description"),
-                        Project_Id = reader["Project_Id"] as Int32?,
-                        User_Id = reader["User_Id"] as Int32?
-                    };
+                    Task task = new(reader.GetInt32("Id"), reader.GetString("Title"), reader.GetString("Description"), reader["Project_Id"] as Int32?, reader["User_Id"] as Int32?);
 
                     return task;
                 }
@@ -111,13 +104,7 @@ namespace TaskManager.DAL.Repositories
 
                 command.ExecuteNonQuery();
 
-                Task updatedTask = new()
-                { 
-                    Id = id,
-                    Title = title,
-                    Description = description,
-                    Project_Id = projectId,
-                };
+                Task updatedTask = new(id, title, description, projectId, null);
 
                 return updatedTask;
 
@@ -177,12 +164,7 @@ namespace TaskManager.DAL.Repositories
 
                 while (reader.Read())
                 {
-                    Task task = new()
-                    {
-                        Id = reader.GetInt32("id"),
-                        Title = reader["Title"].ToString(),
-                        Description = reader["Description"].ToString(),
-                    };
+                    Task task = new(reader.GetInt32("id"), reader["Title"].ToString(), reader["Description"].ToString(), null, null);
 
                     tasks.Add(task);
                 }

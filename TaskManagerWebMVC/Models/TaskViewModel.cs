@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace TaskManagerWebMVC.Models
 {
     public class TaskViewModel

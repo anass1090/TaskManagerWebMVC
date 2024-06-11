@@ -223,13 +223,8 @@ namespace TaskManager.DAL.Repositories
 
                 while (tasksReader.Read())
                 {
-                    Task task = new()
-                    {
-                        Id = tasksReader.GetInt32("id"),
-                        Title = tasksReader["Title"].ToString(),
-                        Description = tasksReader["Description"].ToString(),
-                    };
-
+                    Task task = new(tasksReader.GetInt32("id"), tasksReader["Title"].ToString(), tasksReader["Description"].ToString(), null, null);
+                   
                     tasks.Add(task);
                 }
 
