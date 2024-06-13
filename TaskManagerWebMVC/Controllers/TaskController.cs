@@ -19,7 +19,7 @@ namespace TaskManager.MVC.Controllers
             if (userId == null)
             {
                 TempData["errorMessage"] = "something went wrong try logging in again.";
-                return RedirectToAction("Login", "Login");
+                return RedirectToAction(nameof(Login), nameof(Login));
             }
             else
             {
@@ -93,9 +93,7 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            int? userId = HttpContext.Session.GetInt32("userId");
-
-            if (userId == null)
+            if (HttpContext.Session.GetInt32("userId") == null)
             {
                 TempData["errorMessage"] = "something went wrong try logging in again.";
                 return RedirectToAction(nameof(Login), nameof(Login));
@@ -110,8 +108,7 @@ namespace TaskManager.MVC.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(TaskViewModel viewModel)
         {
-            int? userId = HttpContext.Session.GetInt32("userId");
-            string? errorMessage = taskService.UpdateTask(viewModel.Id, viewModel.Title, viewModel.Project_Id, viewModel.Description, userId).Item2;
+            string? errorMessage = taskService.UpdateTask(viewModel.Id, viewModel.Title, viewModel.Project_Id, viewModel.Description, HttpContext.Session.GetInt32("userId")).Item2;
 
             if (errorMessage == null)
             {

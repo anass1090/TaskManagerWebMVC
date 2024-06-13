@@ -9,24 +9,19 @@ using TaskManager.Logic.Exceptions;
 #nullable enable
 namespace TaskManager.DAL.Repositories
 {
-    public class TaskRepository : ITaskRepository
+    public class TaskRepository(string connectionString) : ITaskRepository
     {
-        private readonly DataAccess dataAccess;
-
-        public TaskRepository()
-        {
-            dataAccess = new();
-        }
+        private readonly MySqlConnection dataAccess = new(connectionString);
 
         public Task CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
         {
             errorMessage = null;
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
                 string query = "INSERT INTO Tasks (Title, Description, Project_Id, User_Id) VALUES (@Title, @Description, @Project_Id, @User_Id)";
 
-                using MySqlCommand command = new (query, dataAccess.Connection);
+                using MySqlCommand command = new (query, dataAccess);
 
                 command.Parameters.AddWithValue("@Title", title);
                 command.Parameters.AddWithValue("@Description", description);
@@ -50,7 +45,7 @@ namespace TaskManager.DAL.Repositories
                 throw new TaskException();
             }
             finally {
-                dataAccess.CloseConnection();
+                dataAccess.Close();
             }
         }
 
@@ -59,11 +54,11 @@ namespace TaskManager.DAL.Repositories
             errorMessage = null;
 
             try {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
 
                 string query = "SELECT Id, Title, Description, Project_Id, User_Id FROM Tasks WHERE Id = @Id";
 
-                MySqlCommand command = new(query, dataAccess.Connection);
+                MySqlCommand command = new(query, dataAccess);
                 command.Parameters.AddWithValue("@Id", id);
 
                 using MySqlDataReader reader = command.ExecuteReader();
@@ -83,7 +78,7 @@ namespace TaskManager.DAL.Repositories
 
             }
             finally { 
-                dataAccess.CloseConnection(); 
+                dataAccess.Close(); 
             }
         }
 
@@ -92,10 +87,10 @@ namespace TaskManager.DAL.Repositories
             errorMessage = null;
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
 
                 string query = "UPDATE Tasks SET Title = @Title, Description = @Description, Project_Id = @Project_Id WHERE Id = @Id";
-                using MySqlCommand command = new(query, dataAccess.Connection);
+                using MySqlCommand command = new(query, dataAccess);
 
                 command.Parameters.AddWithValue("@Id", id);
                 command.Parameters.AddWithValue("@Title", title);
@@ -115,7 +110,7 @@ namespace TaskManager.DAL.Repositories
             }
             finally
             {
-                dataAccess.CloseConnection();
+                dataAccess.Close();
             }
         }
 
@@ -125,11 +120,11 @@ namespace TaskManager.DAL.Repositories
 
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
                 
                 string query = "DELETE FROM Tasks WHERE Id = @Id";
 
-                using MySqlCommand command = new(query, dataAccess.Connection);
+                using MySqlCommand command = new(query, dataAccess);
 
                 command.Parameters.AddWithValue("@Id", id);
 
@@ -141,7 +136,7 @@ namespace TaskManager.DAL.Repositories
                 errorMessage = "Error deleting task: " + ex.Message;
                 return false;
             } finally { 
-                dataAccess.CloseConnection(); 
+                dataAccess.Close(); 
             }
         }
 
@@ -153,11 +148,11 @@ namespace TaskManager.DAL.Repositories
 
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
 
                 string query = "SELECT Id, Title, Description FROM Tasks WHERE User_Id = @userId";
 
-                using MySqlCommand command = new(query, dataAccess.Connection);
+                using MySqlCommand command = new(query, dataAccess);
                 command.Parameters.AddWithValue("@userId", userId);
 
                 using MySqlDataReader reader = command.ExecuteReader();
@@ -178,7 +173,7 @@ namespace TaskManager.DAL.Repositories
             }
             finally
             {
-                dataAccess.CloseConnection();
+                dataAccess.Close();
             }
         }
     }

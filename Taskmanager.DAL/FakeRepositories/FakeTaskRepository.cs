@@ -9,10 +9,6 @@ namespace TaskManager.DAL.FakeRepositories
 {
     public class FakeTaskRepository : ITaskRepository
     {
-        public FakeTaskRepository()
-        {
-        }
-
         public Task CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
         {
             errorMessage = null;

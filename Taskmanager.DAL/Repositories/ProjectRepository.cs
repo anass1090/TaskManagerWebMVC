@@ -7,24 +7,19 @@ using TaskManager.Logic.Interfaces;
 #nullable enable
 namespace TaskManager.DAL.Repositories
 {
-    public class ProjectRepository : IProjectRepository
+    public class ProjectRepository(string connectionString) : IProjectRepository
     {
-        private readonly DataAccess dataAccess;
-
-        public ProjectRepository()
-        {
-            dataAccess = new();
-        }
+        private readonly MySqlConnection dataAccess = new(connectionString);
 
         public Project? CreateProject(string title, string description, List<int>? userIdsToAdd)
         {
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
                 
                 string query = "INSERT INTO Projects (Title, Description) VALUES (@Title, @Description)";
 
-                using MySqlCommand command = new (query, dataAccess.Connection);
+                using MySqlCommand command = new (query, dataAccess);
                 command.Parameters.AddWithValue("@Title", title);
                 command.Parameters.AddWithValue("@Description", description);
                 command.ExecuteNonQuery();
@@ -57,7 +52,7 @@ namespace TaskManager.DAL.Repositories
             }
             finally
             {
-                dataAccess.CloseConnection();
+                dataAccess.Close();
             }
         }
 
@@ -67,11 +62,11 @@ namespace TaskManager.DAL.Repositories
 
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
 
                 string query = "SELECT Id, Title, Description FROM Projects WHERE Id = @Id";
 
-                MySqlCommand command = new(query, dataAccess.Connection);
+                MySqlCommand command = new(query, dataAccess);
                 command.Parameters.AddWithValue("@Id", id);
 
                 using MySqlDataReader reader = command.ExecuteReader();
@@ -97,7 +92,7 @@ namespace TaskManager.DAL.Repositories
             }
             finally
             {
-                dataAccess.CloseConnection();
+                dataAccess.Close();
             }
         }
 
@@ -106,10 +101,10 @@ namespace TaskManager.DAL.Repositories
             errorMessage = null;
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
 
                 string query = "UPDATE Projects SET Title = @Title, Description = @Description WHERE Id = @Id";
-                MySqlCommand command = new(query, dataAccess.Connection);
+                MySqlCommand command = new(query, dataAccess);
 
                 command.Parameters.AddWithValue("@Id", id);
                 command.Parameters.AddWithValue("@Title", title);
@@ -134,7 +129,7 @@ namespace TaskManager.DAL.Repositories
             }
             finally
             {
-                dataAccess.CloseConnection();
+                dataAccess.Close();
             }
         }
 
@@ -144,11 +139,11 @@ namespace TaskManager.DAL.Repositories
 
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
 
                 string query = "DELETE FROM Projects WHERE Id = @Id";
 
-                MySqlCommand command = new(query, dataAccess.Connection);
+                MySqlCommand command = new(query, dataAccess);
 
                 command.Parameters.AddWithValue("@Id", id);
 
@@ -160,7 +155,7 @@ namespace TaskManager.DAL.Repositories
             }
             finally
             {
-                dataAccess.CloseConnection();
+                dataAccess.Close();
             }
         }
 
@@ -172,11 +167,11 @@ namespace TaskManager.DAL.Repositories
 
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
 
                 string query = "SELECT Id, Title, Description FROM Projects";
 
-                MySqlCommand command = new(query, dataAccess.Connection);
+                MySqlCommand command = new(query, dataAccess);
 
                 using MySqlDataReader reader = command.ExecuteReader();
 
@@ -200,7 +195,7 @@ namespace TaskManager.DAL.Repositories
             }
             finally
             {
-                dataAccess.CloseConnection();
+                dataAccess.Close();
             }
 
         }
@@ -211,11 +206,11 @@ namespace TaskManager.DAL.Repositories
 
             try
             {
-                dataAccess.OpenConnection();
+                dataAccess.Open();
 
                 string tasksQuery = "SELECT Id, Title, Description FROM Tasks WHERE Project_Id = @projectId";
 
-                MySqlCommand tasksCommand = new(tasksQuery, dataAccess.Connection);
+                MySqlCommand tasksCommand = new(tasksQuery, dataAccess);
                 tasksCommand.Parameters.AddWithValue("@Project_Id", projectId); 
                 using MySqlDataReader tasksReader = tasksCommand.ExecuteReader();
 
@@ -237,7 +232,7 @@ namespace TaskManager.DAL.Repositories
             }
             finally 
             { 
-                dataAccess.CloseConnection(); 
+                dataAccess.Close(); 
             }
         }
 
@@ -247,7 +242,7 @@ namespace TaskManager.DAL.Repositories
             try
             {
                 string query = "DELETE FROM UsersProjects WHERE ProjectId = @ProjectId AND UserId = @UserId";
-                using MySqlCommand command = new(query, dataAccess.Connection);
+                using MySqlCommand command = new(query, dataAccess);
                 command.Parameters.AddWithValue("@ProjectId", projectId);
                 command.Parameters.AddWithValue("@UserId", userId);
                 command.ExecuteNonQuery();
@@ -264,7 +259,7 @@ namespace TaskManager.DAL.Repositories
             try
             {
                 string query = "INSERT INTO usersprojects (project_id, user_id) VALUES (@ProjectId, @UserId)";
-                using MySqlCommand command = new(query, dataAccess.Connection);
+                using MySqlCommand command = new(query, dataAccess);
 
                 command.Parameters.AddWithValue("@ProjectId", projectId);
                 command.Parameters.AddWithValue("@UserId", userId);
@@ -284,7 +279,7 @@ namespace TaskManager.DAL.Repositories
             {
                 string query = "SELECT u.Id, u.FirstName, u.LastName, u.Email FROM Users u INNER JOIN UsersProjects up ON u.Id = up.UserId WHERE up.ProjectId = @ProjectId";
 
-                using MySqlCommand command = new(query, dataAccess.Connection);
+                using MySqlCommand command = new(query, dataAccess);
                 command.Parameters.AddWithValue("@ProjectId", projectId);
 
                 using MySqlDataReader reader = command.ExecuteReader();

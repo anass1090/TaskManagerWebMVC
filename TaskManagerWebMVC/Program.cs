@@ -10,17 +10,36 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 
 // Register repositories and services
-builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>(provider =>
+{
+    if (builder.Configuration.GetConnectionString("DefaultConnection") == null)
+    {
+        throw new InvalidOperationException("Connection string is not configured.");
+    }
+    else
+    {
+        return new TaskRepository(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+});
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>(provider =>
+{
+    if (builder.Configuration.GetConnectionString("DefaultConnection") == null)
+    {
+        throw new InvalidOperationException("Connection string is not configured.");
+    }
+    else
+    {
+        return new ProjectRepository(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+});
 builder.Services.AddScoped<IUserRepository, UserRepository>(provider =>
 {
-    string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (connectionString == null)
+    if (builder.Configuration.GetConnectionString("DefaultConnection") == null)
     {
         throw new InvalidOperationException("Connection string is not configured.");
     } else
     {
-        return new UserRepository(connectionString);
+        return new UserRepository(builder.Configuration.GetConnectionString("DefaultConnection"));
     }
 });
 
