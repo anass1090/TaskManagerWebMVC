@@ -4,13 +4,6 @@
 
 <h2>Register</h2>
 
-@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
-{
-    <div class="alert alert-danger">
-        @ViewBag.ErrorMessage
-    </div>
-}
-
 <form asp-action="Register" method="post">
     <div class="form-group">
         <label for="firstName">First Name:</label>

@@ -1,7 +1,6 @@
 ﻿using System;
 using MySql.Data.MySqlClient;
 using System.Collections.Generic;
-using TaskManager.DAL.Connection;
 using TaskManager.Logic.Interfaces;
 using TaskManager.Logic.Models;
 using TaskManager.Logic.Exceptions;
@@ -13,9 +12,8 @@ namespace TaskManager.DAL.Repositories
     {
         private readonly MySqlConnection dataAccess = new(connectionString);
 
-        public Task CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
+        public Task CreateTask(string title, string description, int? projectId, int userId)
         {
-            errorMessage = null;
             try
             {
                 dataAccess.Open();
@@ -29,7 +27,14 @@ namespace TaskManager.DAL.Repositories
                 command.Parameters.AddWithValue("@User_Id", userId);
 
                 int Id = (int)command.LastInsertedId;
-                Task task = new(Id, title, description);
+
+                Task task = new(
+                    Id, 
+                    title,
+                    description, 
+                    projectId,
+                    userId
+                );
 
                 command.ExecuteNonQuery();
 
@@ -38,7 +43,7 @@ namespace TaskManager.DAL.Repositories
             } catch (MySqlException ex)
             {
                 Console.WriteLine(ex.Message);
-                throw new TaskException();
+                throw new DatabaseException("Something went wrong, contact customer support.");
             } catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
@@ -49,11 +54,10 @@ namespace TaskManager.DAL.Repositories
             }
         }
 
-        public Task? GetTaskById(int id, out string? errorMessage)
+        public Task GetTaskById(int id)
         {
-            errorMessage = null;
-
-            try {
+            try 
+            {
                 dataAccess.Open();
 
                 string query = "SELECT Id, Title, Description, Project_Id, User_Id FROM Tasks WHERE Id = @Id";
@@ -63,21 +67,37 @@ namespace TaskManager.DAL.Repositories
 
                 using MySqlDataReader reader = command.ExecuteReader();
 
-                if (reader.Read())
+                while(reader.Read())
                 {
-                    Task task = new(reader.GetInt32("Id"), reader.GetString("Title"), reader.GetString("Description"), reader["Project_Id"] as Int32?, reader["User_Id"] as Int32?);
+                    Task task = new(
+                        reader.GetInt32("Id"),
+                        reader.GetString("Title"),
+                        reader.GetString("Description"),
+                        reader["Project_Id"] as Int32?,
+                        reader["User_Id"] as Int32?
+                    );
 
                     return task;
                 }
 
-                return null;
+                throw new Exception("try again later.");
             }
-            catch (Exception ex) {
-                errorMessage = "Error fetching task: " + ex.Message;
-                return null;
-
+            catch (MySqlException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new DatabaseException("contact customer support.");
             }
-            finally { 
+            catch (TaskException ex)
+            {
+                throw new TaskException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new TaskException();
+            }
+            finally 
+            { 
                 dataAccess.Close(); 
             }
         }

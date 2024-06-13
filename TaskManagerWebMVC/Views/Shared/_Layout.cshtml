@@ -31,6 +31,9 @@
         </nav>
     </header>
     <div class="container">
+        @await Html.PartialAsync("Alerts")
+    </div>
+    <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>

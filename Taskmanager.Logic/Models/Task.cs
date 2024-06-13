@@ -4,7 +4,6 @@ namespace TaskManager.Logic.Models
 {
     public class Task
     {
-        // adding own errorhandling in constructor , think about what is better
         public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
@@ -21,20 +20,6 @@ namespace TaskManager.Logic.Models
                 Project_Id = project_Id;
                 User_Id = user_Id;
             } else
-            {
-                throw new TaskException("Not all required fields where filled in.");
-            }
-        }
-
-        public Task(int id, string title, string description)
-        {
-            if (title != null && description != null)
-            {
-                Id = id;
-                Title = title;
-                Description = description;
-            }
-            else
             {
                 throw new TaskException("Not all required fields where filled in.");
             }

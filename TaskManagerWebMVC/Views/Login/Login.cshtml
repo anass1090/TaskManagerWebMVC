@@ -4,13 +4,6 @@
 
 <h2>Login</h2>
 
-@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
-{
-    <div class="alert alert-danger">
-        @ViewBag.ErrorMessage
-    </div>
-}
-
 <form asp-action="Login" method="post">
     <div class="form-group">
         <label for="email">Email:</label>

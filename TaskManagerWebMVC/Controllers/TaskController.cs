@@ -14,16 +14,14 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            int? userId = HttpContext.Session.GetInt32("userId");
-
-            if (userId == null)
+            if (HttpContext.Session.GetInt32("userId") == null)
             {
                 TempData["errorMessage"] = "something went wrong try logging in again.";
                 return RedirectToAction(nameof(Login), nameof(Login));
             }
             else
             {
-                (List<Task>? tasks, string? errorMessage) = taskService.GetAllTasks(userId.Value);
+                (List<Task>? tasks, string? errorMessage) = taskService.GetAllTasks(HttpContext.Session.GetInt32("userId").Value);
 
                 ViewBag.ErrorMessage = errorMessage;
                 List<TaskViewModel> taskViewModels = [];
@@ -43,29 +41,42 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Details(int id)
         {
-            int? userId = HttpContext.Session.GetInt32("userId");
-            (Task? task, string? errorMessage) = taskService.GetTaskById(id, userId);
-            
-            ViewBag.ErrorMessage = errorMessage;
+            try
+            {
+                Task task = taskService.GetTaskById(id, HttpContext.Session.GetInt32("userId"));
 
-            if (task != null)
-            {
-                TaskViewModel taskView = ConvertTaskToTaskView(task);
-                return View(taskView);
-            } else
-            {
-                return RedirectToAction("Index", "Home");
+                return View(ConvertTaskToTaskView(task));
             }
-
+            catch (TaskException ex)
+            {
+                TempData["ErrorMessage"] = "Error fetching task: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DatabaseException ex)
+            {
+                TempData["ErrorMessage"] = "Error fetching task: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (UserException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction(nameof(Login), nameof(Login));
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "Error fetching task, try again later.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(TaskViewModel model)
         {
+            ViewBag.Projects = projectService.GetAllProjects().Item1;
+
             if (!ModelState.IsValid)
             {
-                ViewBag.Projects = projectService.GetAllProjects().Item1;
                 return View(model);
             }
 
@@ -78,15 +89,18 @@ namespace TaskManager.MVC.Controllers
             }
             catch (TaskException ex)
             {
-                TempData["ErrorMessage"] = "Error while creating task: " + ex.Message;
-                ViewBag.Projects = projectService.GetAllProjects().Item1;
-                return RedirectToAction(nameof(Create));
+                ViewBag.ErrorMessage = ex.Message;
+                return View(model);
+            }
+            catch (DatabaseException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                return View(model);
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] = "Error while creating task, try again later.";
-                ViewBag.Projects = projectService.GetAllProjects().Item1;
-                return RedirectToAction(nameof(Create));
+                ViewBag.ErrorMessage = "Error while creating task, try again later.";
+                return View(model);
             }
         }
 
@@ -99,7 +113,7 @@ namespace TaskManager.MVC.Controllers
                 return RedirectToAction(nameof(Login), nameof(Login));
             }
 
-            (ViewBag.Projects, string errorMesage) = projectService.GetAllProjects();
+            (ViewBag.Projects, _) = projectService.GetAllProjects();
 
             return View();
         }
@@ -126,16 +140,10 @@ namespace TaskManager.MVC.Controllers
         public IActionResult Edit(int id)
         {
             int? userId = HttpContext.Session.GetInt32("userId");
-            (Task? task, string? errorMessage) = taskService.GetTaskById(id, userId);
-
-            if (errorMessage != null)
-            {   
-                ViewBag.ErrorMessage = errorMessage;
-            }
+            Task task = taskService.GetTaskById(id, userId);
 
             if (task == null)
             {
-                TempData["ErrorMessage"] = errorMessage;
                 return RedirectToAction("Index", "Home");
             }
 
@@ -150,8 +158,7 @@ namespace TaskManager.MVC.Controllers
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            int? userId = HttpContext.Session.GetInt32("userId");
-            Task? task = taskService.GetTaskById(id, userId).Item1;
+            Task task = taskService.GetTaskById(id, HttpContext.Session.GetInt32("userId"));
 
             if (task == null)
             {

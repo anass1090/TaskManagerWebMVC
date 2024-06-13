@@ -9,35 +9,51 @@ namespace TaskManager.DAL.FakeRepositories
 {
     public class FakeTaskRepository : ITaskRepository
     {
-        public Task CreateTask(string title, string description, int? projectId, int userId, out string? errorMessage)
+        private readonly Dictionary<int, Task> Tasks = new()
         {
-            errorMessage = null;
+            { 1, new Task(1, "Test title", "Test description", 3, 1) },
+            { 2, new Task(2, "Another title", "Another description", 3, 2) }
+        };
+
+        public Task CreateTask(string title, string description, int? projectId, int userId)
+        {
             try
             {
                 Task task = new(1, title, description, projectId, userId);
 
+                if (userId == 999)
+                {
+                    throw new DatabaseException();
+                }
                 return task;
                 
-            } catch (Exception ex) {
-                errorMessage = "Error creating task: " + ex.Message;
-                throw new TaskException();
+            } catch (DatabaseException) {
+                throw new DatabaseException();
             }
           
         }
 
-        public Task? GetTaskById(int id, out string? errorMessage)
+        public Task GetTaskById(int id)
         {
-            errorMessage = null;
-
-            try 
+            try
             {
-                Task task = new(1, "Test title", "Test description", 3, 2);
-              
-                return null;
+                if (id == 999)
+                {
+                    throw new DatabaseException();
+                }
+
+                Tasks.TryGetValue(id, out Task? task);
+
+                if (task == null)
+                {
+                    throw new TaskException("Task not found.");
+                }
+                
+                return task;
             }
-            catch (Exception ex) {
-                errorMessage = "Error fetching task: " + ex.Message;
-                return null;
+            catch (DatabaseException)
+            {
+                throw new DatabaseException();
             }
         }
 

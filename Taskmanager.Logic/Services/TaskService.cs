@@ -2,8 +2,8 @@
 using TaskManager.Logic.Interfaces;
 using Task = TaskManager.Logic.Models.Task;
 using TaskManager.Logic.Exceptions;
-using TaskManager.Logic.Models;
-using System.Threading.Tasks;
+using System;
+
 #nullable enable
 namespace TaskManager.Logic.Managers
 {
@@ -11,45 +11,72 @@ namespace TaskManager.Logic.Managers
     {
         public Task CreateTask(string title, string description, int? projectId, int userId)
         {
-            if (title == null || description == null)
-            {
-                throw new TaskException("Title and / or description is empty.");
-            }
-            else if (title.Length > 50 || description.Length > 1000)
-            {
-                throw new TaskException("Too many characters in your title or description, try again.");
-            }
-
             try
             {
-                return taskRepository.CreateTask(title, description, projectId, userId, out string? errorMessage);
+                if (title == null || description == null)
+                {
+                    throw new TaskException("Title and / or description is empty.");
+                }
+                else if (title.Length > 50 || description.Length > 1000)
+                {
+                    throw new TaskException("Too many characters in your title or description, try again.");
+                }
+
+                return taskRepository.CreateTask(title, description, projectId, userId);
             }
-            catch (TaskException)
+            catch (DatabaseException)
             {
-                throw new TaskException("try again later.");
+                throw new DatabaseException("Something went wrong, contact customer support.");
             }
         }
 
-        public (Task?, string?) GetTaskById(int id, int? userId)
+        public Task GetTaskById(int id, int? userId)
         {
-            Task? task = taskRepository.GetTaskById(id, out string? errorMessage);
+            try
+            {
+                if (id <= 0)
+                {
+                    throw new TaskException("Task does not exist.");
+                }
+                if (userId == null)
+                {
+                    throw new UserException("User is not logged in.");
+                }
 
-            if (task != null && userId != null && task.User_Id == userId)
+                Task task = taskRepository.GetTaskById(id);
+
+                if (task.User_Id != userId)
+                {
+                    throw new UserException("User does not have access to this task.");
+                }
+
+                return task;
+            }
+            catch (DatabaseException ex)
             {
-                return (task, errorMessage);
-            } else
+                throw new DatabaseException(ex.Message);
+            }
+            catch (TaskException ex)
             {
-                return (null, "You are trying to edit a task that is not yours!");
+                throw new TaskException(ex.Message);
+            }
+            catch (UserException ex)
+            {
+                throw new UserException(ex.Message);
+            }
+            catch (Exception)
+            {
+                throw new TaskException("An error occurred while retrieving the task.");
             }
         }
 
         public (Task?, string?) UpdateTask(int id, string title, int? projectId, string description, int? userId)
         {
-            Task? checkTask = taskRepository.GetTaskById(id, out string? errorMessage);
+            Task? checkTask = taskRepository.GetTaskById(id);
 
             if(checkTask != null && userId != null && checkTask.User_Id == userId)
             {
-                Task? task = taskRepository.UpdateTask(id, title, description, projectId, out errorMessage);
+                Task? task = taskRepository.UpdateTask(id, title, description, projectId, out string? errorMessage);
                 return (task, errorMessage);
             } else
             {
